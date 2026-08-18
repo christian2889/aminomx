@@ -408,6 +408,15 @@
     menu.addEventListener("click", function (e) { if (e.target.closest("a")) { burger.setAttribute("aria-expanded", "false"); menu.classList.remove("show"); } });
   }
 
+  // Tema claro / oscuro (el script en <head> fija el tema inicial sin parpadeo)
+  function currentTheme() { return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"; }
+  function syncMeta() { var m = $('meta[name="theme-color"]'); if (m) m.setAttribute("content", currentTheme() === "light" ? "#eef6f7" : "#0a0f16"); }
+  function setTheme(t) { document.documentElement.setAttribute("data-theme", t); if (LS) LS.setItem("amx_theme", t); syncMeta(); }
+  $$("[data-theme-toggle]").forEach(function (b) {
+    b.addEventListener("click", function () { setTheme(currentTheme() === "light" ? "dark" : "light"); });
+  });
+  syncMeta();
+
   // Verify
   var vForm = $("[data-verify-form]");
   if (vForm) vForm.addEventListener("submit", function (e) {
