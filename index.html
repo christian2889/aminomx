@@ -3,367 +3,330 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aminos MX · Péptidos liofilizados de alta pureza</title>
-<meta name="description" content="Péptidos de investigación liofilizados, importados de USA y verificados por HPLC, con COA por lote. Envíos en frío desde Baja California a todo México. Research use only.">
-<meta name="theme-color" content="#0d1117">
-<meta property="og:title" content="Aminos MX · Péptidos liofilizados de alta pureza">
-<meta property="og:description" content="Pureza ≥99%, COA por lote, cadena de frío. Envíos a todo México en 24–72 h.">
+<title>Aminos MX · Péptidos y aminoácidos de grado investigación</title>
+<meta name="description" content="Venta de péptidos liofilizados y aminoácidos de grado investigación en México. Pureza verificada ≥99%, COA por lote y envío en cadena de frío a todo el país.">
+<meta name="theme-color" content="#0a0f16">
+<meta property="og:title" content="Aminos MX · Péptidos de grado investigación">
+<meta property="og:description" content="Pureza ≥99% verificada por HPLC, COA por lote, envío refrigerado a todo México.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@500;700&family=Public+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
-<body class="has-tabbar">
-<a class="skip-link" href="#main">Saltar al contenido</a>
+<body>
+<a class="skip-link" href="#catalogo">Saltar al catálogo</a>
 
-<!-- Announcement -->
+<!-- ===== Icon sprite ===== -->
+<svg style="display:none" aria-hidden="true"><defs>
+<symbol id="i-dna" viewBox="0 0 24 24"><path d="M6 3c0 5 12 5 12 10s-12 5-12 10"/><path d="M18 3c0 5-12 5-12 10s12 5 12 10"/><path d="M8.5 6h7M8.5 12h7M8.5 18h7"/></symbol>
+<symbol id="i-snowflake" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/><path d="M12 6l2-2M12 6l-2-2M12 18l2 2M12 18l-2 2M6 12l-2 2M6 12l-2-2M18 12l2 2M18 12l2-2"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h2l2.6 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H5"/></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+<symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6.6a1 1 0 0 1-.2.6L4.4 18a2 2 0 0 0 1.6 3.2h12a2 2 0 0 0 1.6-3.2L14.2 10.2a1 1 0 0 1-.2-.6V3M6.5 15h11"/></symbol>
+<symbol id="i-badge-check" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a1 1 0 0 0-1-1H2v13h2M14 9h4l3 3v6h-3M9 18h5"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+<symbol id="i-trending-down" viewBox="0 0 24 24"><path d="M16 17h6v-6M22 17 13.5 8.5 8.5 13.5 2 7"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14h7l-2 8L20 10h-7l2-8z"/></symbol>
+<symbol id="i-heart-pulse" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3 5.5 5.5 0 0 0 12 5.5 5.5 5.5 0 0 0 7.5 3 5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/><path d="M3.5 9.5h4l1.5-3 3 6 1.5-3h4"/></symbol>
+<symbol id="i-syringe" viewBox="0 0 24 24"><path d="m18 2 4 4M17 3l4 4M13 7l4 4M4 20l7-7M2 22l1-4 12-12 3 3L6 21z"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.9 14.5 12 20l2.1-5.5L20 12l-5.9-2.5L12 4 9.9 9.5 4 12z"/><path d="M18 4v4M16 6h4M4 16v2M3 17h2"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+<symbol id="i-microscope" viewBox="0 0 24 24"><path d="M6 18h8M3 22h18M14 22a7 7 0 1 0 0-14h-1M9 14h2M9 12a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2 2 2 0 0 1 2 2v4a2 2 0 0 1-2 2ZM12 6h1"/></symbol>
+<symbol id="i-file-check" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5M9 15l2 2 4-4"/></symbol>
+<symbol id="i-headset" viewBox="0 0 24 24"><path d="M3 11a9 9 0 0 1 18 0"/><path d="M21 16a2 2 0 0 1-2 2h-1v-7h1a2 2 0 0 1 2 2zM3 16a2 2 0 0 0 2 2h1v-7H5a2 2 0 0 0-2 2z"/><path d="M21 16v1a4 4 0 0 1-4 4h-3"/></symbol>
+<symbol id="i-credit-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+<symbol id="i-landmark" viewBox="0 0 24 24"><path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M4 11 12 4l8 7M2 11h20"/></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h14v3M3 6v12a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4M3 6h17a1 1 0 0 1 1 1v4M16 14h2"/></symbol>
+<symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+<symbol id="i-timer" viewBox="0 0 24 24"><path d="M10 2h4M12 14l3-3"/><circle cx="12" cy="14" r="8"/></symbol>
+<symbol id="i-package-check" viewBox="0 0 24 24"><path d="M16 16l2 2 4-4M21 10V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l2-1.1M3.3 7 12 12l8.7-5M12 22V12"/></symbol>
+<symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1 1 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-package" viewBox="0 0 24 24"><path d="M16.5 9.4 7.5 4.2M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16ZM3.3 7 12 12l8.7-5M12 22V12"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></symbol>
+<symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+</defs></svg>
+
+<!-- ===== Announcement ===== -->
 <div class="announce" data-showbar>
-  <span data-en="Free shipping on orders over $2,500 MXN">Envío gratis en pedidos desde $2,500 MXN</span>
-  <span class="sep">/</span>
-  <span data-en="Ships from Baja California to all of Mexico">Envíos desde Baja California a todo México</span>
-  <span class="sep">/</span>
-  <span class="hot" data-en="COA per batch">COA por lote</span>
+  <svg class="ico"><use href="#i-snowflake"/></svg>
+  <span data-en="Free refrigerated shipping on orders over $2,500 MXN · Nationwide">Envío refrigerado gratis en pedidos desde $2,500 MXN · A todo México</span>
 </div>
 
-<!-- Header -->
-<header class="header">
-  <a class="brand" href="index.html" aria-label="Aminos MX">
-    <span class="wordmark wordmark--lg">
-      <span class="word"><span class="amino">Aminos</span><span class="mx">MX</span></span>
-      <span class="tag">RESEARCH USE ONLY</span>
-    </span>
-  </a>
-  <nav class="nav" aria-label="Principal">
-    <a href="#catalogo" class="active" data-en="Catalog">Catálogo</a>
-    <a href="#productos" data-en="Peptides">Péptidos</a>
-    <a href="#productos" data-en="Amino acids">Aminoácidos</a>
-    <a href="#productos" data-en="Kits">Kits</a>
-    <a href="#calidad" data-en="Quality">Calidad</a>
-    <a href="#logistica" data-en="Shipping">Envíos</a>
-    <a href="#logistica" data-en="Referrals">Referidos</a>
-  </nav>
-  <label class="search">
-    <span class="ring" aria-hidden="true"></span>
-    <input type="search" placeholder="Buscar BPC-157, TB-500…" data-en-ph="Search BPC-157, TB-500…" aria-label="Buscar productos">
-  </label>
-  <div class="langtoggle" role="group" aria-label="Idioma">
-    <button type="button" data-lang="es" class="active">ES</button>
-    <button type="button" data-lang="en">EN</button>
+<!-- ===== Header ===== -->
+<header class="header" data-scrolled="false">
+  <div class="container header-inner">
+    <a class="brand" href="#inicio" aria-label="Aminos MX">
+      <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
+      <span class="brand-name">Aminos<span class="mx">MX</span><span class="ruo" data-en="Research use only">Grado investigación</span></span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="#catalogo" data-en="Catalog">Catálogo</a>
+      <a href="#categorias" data-en="Categories">Categorías</a>
+      <a href="#envios" data-en="Payments &amp; shipping">Pagos y envíos</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contacto" data-en="Contact">Contacto</a>
+    </nav>
+    <div class="header-actions">
+      <div class="langtoggle" role="group" aria-label="Idioma">
+        <button type="button" data-lang="es" class="active">ES</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <button class="cartbtn" data-open-cart>
+        <svg class="ico"><use href="#i-cart"/></svg>
+        <span class="hide-sm" data-en="Cart">Carrito</span>
+        <span class="cart-count" data-cart-count data-empty="true">0</span>
+      </button>
+      <button class="burger" aria-label="Menú" aria-expanded="false" data-burger>
+        <svg class="ico ico-menu"><use href="#i-menu"/></svg>
+        <svg class="ico ico-close"><use href="#i-x"/></svg>
+      </button>
+    </div>
   </div>
-  <button class="cartbtn" data-open-cart>
-    <span data-en="Cart">Carrito</span>
-    <span class="cart-count" data-cart-count>0</span>
-  </button>
-  <button class="burger" aria-label="Menú" aria-expanded="false" data-burger>
-    <span></span><span></span><span></span>
-  </button>
 </header>
 
 <!-- Mobile menu -->
 <div class="mobile-menu" data-mobile-menu>
-  <label class="m-search">
-    <span class="ring" aria-hidden="true" style="width:11px;height:11px;border:1.5px solid #9a9a94;border-radius:50%"></span>
-    <input type="search" placeholder="Buscar BPC-157, TB-500…" data-en-ph="Search BPC-157, TB-500…" aria-label="Buscar">
-  </label>
-  <a href="#catalogo" data-en="Catalog">Catálogo</a>
-  <a href="#productos" data-en="Peptides">Péptidos</a>
-  <a href="#productos" data-en="Amino acids">Aminoácidos</a>
-  <a href="#productos" data-en="Kits">Kits</a>
-  <a href="#calidad" data-en="Quality">Calidad</a>
-  <a href="#logistica" data-en="Shipping">Envíos</a>
+  <div class="inner">
+    <a href="#catalogo" data-en="Catalog">Catálogo</a>
+    <a href="#categorias" data-en="Categories">Categorías</a>
+    <a href="#envios" data-en="Payments &amp; shipping">Pagos y envíos</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contacto" data-en="Contact">Contacto</a>
+  </div>
 </div>
 
-<main id="main">
+<main id="inicio">
 
-  <!-- Hero -->
+  <!-- ===== Hero ===== -->
   <section class="hero">
-    <div class="hero-copy">
-      <span class="tagbox" data-en="Imported from USA · Research use only">Importado de USA · Research use only</span>
-      <h1><span data-en="Lyophilized">Péptidos</span><br><span data-en="peptides">Liofilizados</span><br><span class="blue" data-en="≥99% purity">Pureza ≥99%</span></h1>
-      <p class="hero-lede" data-en="High-purity peptides imported from the USA, third-party HPLC verified, with a checkable COA per batch. Cold-shipped from Baja California across Mexico in 24–72 h. Your trusted provider for Mexican customers and Americans living in Mexico.">Péptidos de alta pureza importados de USA, verificados por HPLC en laboratorio externo, con COA consultable por lote. Enviamos en frío desde Baja California a todo México en 24–72 h. Tu proveedor de confianza, para clientes nacionales y americanos residentes en México.</p>
+    <div class="molecule-bg"></div>
+    <div class="glow-blob"></div>
+    <div class="container hero-inner">
+      <span class="badge badge-outline"><svg class="ico"><use href="#i-snowflake"/></svg><span data-en="Lyophilized peptides · Research grade">Péptidos liofilizados · Grado investigación</span></span>
+      <h1><span data-en="Peptides and amino acids of ">Péptidos y aminoácidos de </span><span class="text-gradient" data-en="maximum purity">máxima pureza</span><span data-en=" in Mexico"> en México</span></h1>
+      <p class="hero-lede" data-en="Online store of lyophilized peptides with verified purity ≥99%. Catalog for weight loss, body recomposition, metabolic health and regeneration. Secure payment and refrigerated shipping nationwide.">Venta en línea de péptidos liofilizados con pureza verificada ≥99%. Catálogo para pérdida de peso, recomposición corporal, salud metabólica y regeneración. Pago seguro y envío refrigerado a todo el país.</p>
       <div class="hero-cta">
-        <a href="#productos" class="btn btn-dark" data-en="Browse catalog">Ver catálogo</a>
-        <a href="#calidad" class="btn btn-outline" data-en="Certificates of analysis">Certificados de análisis</a>
+        <a href="#catalogo" class="btn btn-primary btn-lg"><span data-en="View catalog">Ver catálogo</span> <svg class="ico"><use href="#i-arrow-right"/></svg></a>
+        <a href="#envios" class="btn btn-outline btn-lg" data-en="Payments &amp; shipping">Pagos y envíos</a>
       </div>
-      <div class="hero-bullets">
-        <span>◦ <span data-en="COA per batch">COA por lote</span></span>
-        <span>◦ <span data-en="Cold chain">Cadena de frío</span></span>
-        <span>◦ <span data-en="Invoicing available">Factura disponible</span></span>
+      <div class="hero-stats">
+        <div class="stat-card"><svg class="ico"><use href="#i-flask"/></svg><b>≥99%</b><span data-en="HPLC-verified purity">Pureza verificada por HPLC</span></div>
+        <div class="stat-card"><svg class="ico"><use href="#i-badge-check"/></svg><b>COA</b><span data-en="Certificate of analysis per batch">Certificado de análisis por lote</span></div>
+        <div class="stat-card"><svg class="ico"><use href="#i-snowflake"/></svg><b>2–8 °C</b><span data-en="Cold-chain shipping">Envío en cadena de frío</span></div>
+        <div class="stat-card"><svg class="ico"><use href="#i-truck"/></svg><b>24–72 h</b><span data-en="Delivery across Mexico">Entrega a todo México</span></div>
       </div>
-    </div>
-    <div class="hero-visual" aria-hidden="true">
-      <span class="vialwrap">
-        <span class="vial" style="--u:1">
-          <span class="cap"></span><span class="collar"></span>
-          <span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l2"></i><i class="l3"></i></span><span class="band"></span></span>
-        </span>
-      </span>
-      <span class="badge-batch" data-en="Batch AMX-2608">Lote AMX-2608</span>
-      <span class="badge-import" data-en="Imported from USA">Importado de USA</span>
     </div>
   </section>
 
-  <!-- Stats -->
-  <section class="stats">
-    <div class="stat"><b>≥99%</b><span data-en="HPLC purity, every batch">Pureza HPLC en cada lote</span></div>
-    <div class="stat"><b>24-72 H</b><span data-en="Delivery across all of Mexico">Entrega en todo México</span></div>
-    <div class="stat"><b>-20 °C</b><span data-en="Cold storage and packing">Almacenaje y empaque en frío</span></div>
-    <div class="stat"><b>100%</b><span data-en="Batch traceability by QR">Trazabilidad por QR del lote</span></div>
-  </section>
-
-  <!-- Categorías -->
-  <section class="sec" id="catalogo">
-    <div class="eyebrow" data-en="Catalog / 01">Catálogo / 01</div>
+  <!-- ===== Categorías ===== -->
+  <section class="section container" id="categorias">
     <div class="sec-head">
-      <h2 data-en="Shop by goal">Comprar por objetivo</h2>
-      <a href="#productos" class="sec-link" data-en="All 42 references →">Ver las 42 referencias →</a>
+      <h2><span data-en="Explore by ">Explora por </span><span class="text-gradient" data-en="goal">objetivo</span></h2>
+      <p data-en="Each category gathers the most studied compounds for your research goal.">Cada categoría reúne los compuestos más estudiados para tu meta de investigación.</p>
     </div>
-    <div class="cats">
-      <a href="#productos" class="cat"><div class="thumb"></div><div class="name" data-en="Recovery &amp; tissue">Recuperación y tejido</div><div class="sku">9 SKU</div></a>
-      <a href="#productos" class="cat"><div class="thumb"></div><div class="name" data-en="Metabolic">Metabólico</div><div class="sku">7 SKU</div></a>
-      <a href="#productos" class="cat"><div class="thumb"></div><div class="name" data-en="GH secretagogues">Secretagogos GH</div><div class="sku">8 SKU</div></a>
-      <a href="#productos" class="cat"><div class="thumb"></div><div class="name" data-en="Skin &amp; cosmetic">Piel y cosmética</div><div class="sku">6 SKU</div></a>
-      <a href="#productos" class="cat"><div class="thumb"></div><div class="name" data-en="Cognitive">Cognitivo</div><div class="sku">5 SKU</div></a>
-      <a href="#productos" class="cat cat--dark"><div class="thumb"></div><div class="name" data-en="Amino acids in powder">Aminoácidos en polvo</div><div class="sku">7 SKU</div></a>
-    </div>
+    <div class="cats" data-cats><!-- rendered by JS --></div>
   </section>
 
-  <!-- Productos -->
-  <section class="sec" id="productos">
-    <div class="eyebrow" data-en="Products / 02">Productos / 02</div>
-    <div class="sec-head">
-      <h2 data-en="Best sellers">Más vendidos</h2>
-      <div class="chips" data-filter-group>
-        <span class="chip active" data-filter="all" data-en="All">Todos</span>
-        <span class="chip" data-filter="peptido" data-en="Peptides">Péptidos</span>
-        <span class="chip" data-filter="blend" data-en="Blends">Blends</span>
-        <span class="chip" data-filter="amino" data-en="Aminos">Aminos</span>
+  <!-- ===== Catálogo ===== -->
+  <section class="section container" id="catalogo">
+    <div class="catalog-top">
+      <div>
+        <h2><span data-en="Catalog of ">Catálogo de </span><span class="text-gradient" data-en="lyophilized peptides">péptidos liofilizados</span></h2>
+        <p data-en="Every batch includes a certificate of analysis (COA) with purity verified by HPLC and mass spectrometry.">Todos los lotes incluyen certificado de análisis (COA) con pureza verificada por HPLC y espectrometría de masas.</p>
       </div>
+      <label class="search">
+        <svg class="ico"><use href="#i-search"/></svg>
+        <input type="search" data-search placeholder="Buscar por nombre o uso…" data-en-ph="Search by name or use…" aria-label="Buscar">
+      </label>
     </div>
-    <div class="products" data-products>
+    <div class="filters" data-filters><!-- rendered by JS --></div>
+    <div class="grid-products" data-grid><!-- rendered by JS --></div>
+    <div class="catalog-empty" data-empty hidden></div>
+  </section>
 
-      <a class="product" data-cat="peptido" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-coa" data-coa>COA 99.4%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="Recovery">Recuperación</div>
-          <div class="title">BPC-157 <small>5 mg</small></div>
-          <div class="sub" data-en="Lyophilized · 1 vial">Liofilizado · 1 vial</div>
-          <div class="row"><div class="price">$890<small>MXN</small></div><button class="btn-add" data-add data-name="BPC-157 5 mg" data-price="890" data-batch="AMX-2608" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="peptido" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-coa" data-coa>COA 99.1%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="Recovery">Recuperación</div>
-          <div class="title">TB-500 <small>5 mg</small></div>
-          <div class="sub" data-en="Lyophilized · 1 vial">Liofilizado · 1 vial</div>
-          <div class="row"><div class="price">$1,150<small>MXN</small></div><button class="btn-add" data-add data-name="TB-500 5 mg" data-price="1150" data-batch="AMX-2611" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="peptido" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-coa" data-coa>COA 99.6%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="GH secretagogues">Secretagogos GH</div>
-          <div class="title">Ipamorelin <small>5 mg</small></div>
-          <div class="sub" data-en="Lyophilized · 1 vial">Liofilizado · 1 vial</div>
-          <div class="row"><div class="price">$780<small>MXN</small></div><button class="btn-add" data-add data-name="Ipamorelin 5 mg" data-price="780" data-batch="AMX-2617" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="blend" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-kit" data-en="Kit −12%">Kit −12%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="Blend">Blend</div>
-          <div class="title">CJC-1295 + Ipamorelin</div>
-          <div class="sub" data-en="2 vials · 5 mg each">2 viales · 5 mg c/u</div>
-          <div class="row"><div class="price">$1,490<small>MXN</small></div><button class="btn-add" data-add data-name="CJC-1295 + Ipamorelin" data-price="1490" data-batch="AMX-2620" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="peptido" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-coa" data-coa>COA 99.2%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="Skin">Piel</div>
-          <div class="title">GHK-Cu <small>50 mg</small></div>
-          <div class="sub" data-en="Lyophilized · 1 vial">Liofilizado · 1 vial</div>
-          <div class="row"><div class="price">$1,190<small>MXN</small></div><button class="btn-add" data-add data-name="GHK-Cu 50 mg" data-price="1190" data-batch="AMX-2624" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="peptido" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-coa" data-coa>COA 99.8%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="Metabolic">Metabólico</div>
-          <div class="title">NAD+ <small>500 mg</small></div>
-          <div class="sub" data-en="Lyophilized · 1 vial">Liofilizado · 1 vial</div>
-          <div class="row"><div class="price">$1,450<small>MXN</small></div><button class="btn-add" data-add data-name="NAD+ 500 mg" data-price="1450" data-batch="AMX-2630" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="peptido" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap"></span><span class="collar"></span><span class="body"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span><span class="tag-coa" data-coa>COA 99.3%</span></div>
-        <div class="info">
-          <div class="kicker" data-en="Cognitive">Cognitivo</div>
-          <div class="title">Semax <small>10 mg</small></div>
-          <div class="sub" data-en="Lyophilized · 1 vial">Liofilizado · 1 vial</div>
-          <div class="row"><div class="price">$1,290<small>MXN</small></div><button class="btn-add" data-add data-name="Semax 10 mg" data-price="1290" data-batch="AMX-2634" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
-      <a class="product" data-cat="amino" href="producto.html">
-        <div class="shot"><span class="vialwrap"><span class="vial" style="--u:.5"><span class="cap" style="width:33px;height:4px;border-radius:2px 2px 0 0;background:#0d1117"></span><span class="body" style="border-radius:0 0 5px 5px"><span class="label"><i class="l1"></i><i class="l2"></i><i class="l3"></i></span></span></span></span></div>
-        <div class="info">
-          <div class="kicker" data-en="Aminos">Aminos</div>
-          <div class="title">L-Glutamina <small>500 g</small></div>
-          <div class="sub" data-en="Pharmaceutical grade powder">Polvo grado farmacéutico</div>
-          <div class="row"><div class="price">$620<small>MXN</small></div><button class="btn-add" data-add data-name="L-Glutamina 500 g" data-price="620" data-batch="AMX-2640" data-en="Add">Añadir</button></div>
-        </div>
-      </a>
-
+  <!-- ===== Por qué ===== -->
+  <section class="section container">
+    <div class="sec-head">
+      <h2><span data-en="Why buy at ">¿Por qué comprar en </span><span class="text-gradient">Aminos MX</span><span data-en="?">?</span></h2>
+      <p data-en="Laboratory standards in every vial, from packaging to your door.">Estándares de laboratorio en cada vial, del envase a tu puerta.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card"><span class="num">01</span><svg class="ico"><use href="#i-microscope"/></svg><h3 data-en="Verified purity ≥99%">Pureza ≥99% verificada</h3><p data-en="Every batch is analyzed by HPLC and mass spectrometry at an independent laboratory.">Cada lote se analiza por HPLC y espectrometría de masas en laboratorio independiente.</p></div>
+      <div class="why-card"><span class="num">02</span><svg class="ico"><use href="#i-file-check"/></svg><h3 data-en="COA per batch">COA por lote</h3><p data-en="Downloadable certificate of analysis with batch number, purity and lyophilization date.">Certificado de análisis descargable con número de lote, pureza y fecha de liofilización.</p></div>
+      <div class="why-card"><span class="num">03</span><svg class="ico"><use href="#i-badge-check"/></svg><h3 data-en="Lyophilized in Mexico">Liofilizado en México</h3><p data-en="Local lyophilization and quality control: no customs, no risk of seizure.">Proceso de liofilización y control de calidad local: sin aduanas, sin riesgo de decomiso.</p></div>
+      <div class="why-card"><span class="num">04</span><svg class="ico"><use href="#i-headset"/></svg><h3 data-en="Specialized support">Atención especializada</h3><p data-en="WhatsApp support for questions about storage, reconstitution and orders.">Soporte por WhatsApp para resolver dudas sobre almacenamiento, reconstitución y pedidos.</p></div>
     </div>
   </section>
 
-  <!-- Calidad -->
-  <section class="quality" id="calidad">
-    <div class="q-left">
-      <div class="eyebrow" data-en="Quality / 03">Calidad / 03</div>
-      <h2 data-en="Every batch, verified by a third party">Cada lote, verificado por un tercero</h2>
-      <p data-en="We publish the HPLC and mass-spectrometry report for every batch. Scan the QR on the vial and you land on its exact certificate — identity, purity, endotoxins and residual solvents.">Publicamos el reporte de HPLC y espectrometría de masas de cada lote. Escanea el QR del vial y llegas a su certificado exacto: identidad, pureza, endotoxinas y solventes residuales.</p>
-      <div class="verify">
-        <div class="lbl" data-en="Verify your certificate">Verifica tu certificado</div>
+  <!-- ===== Verificación COA ===== -->
+  <section class="section container">
+    <div class="verify-strip">
+      <div>
+        <div class="eyebrow vs-eyebrow" data-en="Batch traceability">Trazabilidad por lote</div>
+        <h3 data-en="Verify your certificate of analysis">Verifica tu certificado de análisis</h3>
+        <p data-en="Enter the batch code printed on the vial (e.g. AMX-2608) to check its purity by HPLC, identity by MS and residual water.">Ingresa el código de lote impreso en el vial (p. ej. AMX-2608) y consulta su pureza por HPLC, identidad por MS y agua residual.</p>
+      </div>
+      <div class="verify-box">
         <form data-verify-form>
-          <input type="text" placeholder="AMX-____" aria-label="Número de lote" data-verify-input>
-          <button type="submit" data-en="Verify">Verificar</button>
+          <input type="text" data-verify-input placeholder="AMX-____" aria-label="Número de lote">
+          <button type="submit" class="btn btn-primary" data-en="Verify">Verificar</button>
         </form>
-        <div class="hint" data-en="The QR on every vial opens its batch COA — HPLC + MS by an independent lab in the USA.">El QR de cada vial abre el COA de su lote — HPLC + MS de laboratorio independiente en USA.</div>
         <div class="result" data-verify-result></div>
       </div>
     </div>
-    <div class="q-right">
-      <div class="coacard">
-        <div class="cid">COA · AMX-2608</div>
-        <div class="chart" data-en="HPLC chromatogram">cromatograma HPLC</div>
-        <table>
-          <tbody>
-            <tr><td data-en="Purity">Pureza</td><td>99.42 %</td></tr>
-            <tr><td data-en="Identity MS">Identidad MS</td><td>1419.5 Da</td></tr>
-            <tr><td data-en="Endotoxins">Endotoxinas</td><td>&lt; 0.5 EU/mg</td></tr>
-          </tbody>
-        </table>
+  </section>
+
+  <!-- ===== Pagos y envíos ===== -->
+  <section class="section sec-secondary" id="envios">
+    <div class="container pay-grid">
+      <div class="pay-col">
+        <span class="eyebrow" data-en="Payment">Pago</span>
+        <h2 data-en="Ways to pay">Formas de pago</h2>
+        <p data-en="Pay however you prefer. All payments are processed in Mexican pesos (MXN).">Compra como prefieras. Todos los pagos se procesan en pesos mexicanos (MXN).</p>
+        <div class="pay-cards">
+          <div class="pay-card"><svg class="ico"><use href="#i-credit-card"/></svg><h3 data-en="Credit / debit card">Tarjeta de crédito / débito</h3><p data-en="Visa, Mastercard and AMEX charged in Mexican pesos with instant confirmation.">Visa, Mastercard y AMEX con cargo en pesos mexicanos y confirmación inmediata.</p></div>
+          <div class="pay-card"><svg class="ico"><use href="#i-landmark"/></svg><h3 data-en="SPEI transfer">Transferencia SPEI</h3><p data-en="We send you the CLABE when you confirm. Validated the same business day.">Te enviamos la CLABE al confirmar tu pedido. Validación el mismo día hábil.</p></div>
+          <div class="pay-card"><svg class="ico"><use href="#i-wallet"/></svg><h3>Mercado Pago</h3><p data-en="Pay with balance, card or cash at affiliated stores (OXXO, 7-Eleven).">Paga con tu saldo, tarjeta o en efectivo en tiendas afiliadas (OXXO, 7-Eleven).</p></div>
+          <div class="pay-card"><svg class="ico"><use href="#i-message-circle"/></svg><h3 data-en="Cash on delivery (CDMX)">Contra entrega (CDMX)</h3><p data-en="Available in selected areas of Mexico City and the metro area.">Disponible en zonas seleccionadas de CDMX y área metropolitana.</p></div>
+        </div>
       </div>
-      <div class="qsteps">
-        <div class="qstep"><b>01</b><span data-en="Lyophilized and sealed under nitrogen">Liofilizado y sellado en nitrógeno</span></div>
-        <div class="qstep"><b>02</b><span data-en="Shipped with gel pack and thermal liner">Enviado con gel y forro térmico</span></div>
-        <div class="qstep"><b>03</b><span data-en="Batch QR on every label">QR de lote en cada etiqueta</span></div>
+      <div class="pay-col">
+        <span class="eyebrow" data-en="Shipping">Envío</span>
+        <h2 data-en="Shipping across Mexico">Envíos a todo México</h2>
+        <p data-en="Your product's stability is our priority: every order ships in a cold chain.">La estabilidad de tu producto es prioridad: cada pedido sale en cadena de frío.</p>
+        <div class="pay-cards">
+          <div class="pay-card"><svg class="ico"><use href="#i-snowflake"/></svg><h3 data-en="Guaranteed cold chain">Cadena de frío garantizada</h3><p data-en="Isothermal packaging with dry ice and gel packs. Lyophilized peptides travel at 2–8 °C.">Empaque isotérmico con hielo seco y gel refrigerante. Los péptidos liofilizados viajan entre 2–8 °C.</p></div>
+          <div class="pay-card"><svg class="ico"><use href="#i-timer"/></svg><h3 data-en="Delivery in 24–72 h">Entrega en 24–72 h</h3><p data-en="Estafeta and DHL nationwide. Metro areas in 24 h, rest of the country in 48–72 h.">Envíos por Estafeta y DHL a todo México. Zonas metropolitanas en 24 h, resto del país en 48–72 h.</p></div>
+          <div class="pay-card"><svg class="ico"><use href="#i-package-check"/></svg><h3 data-en="Free shipping from $2,500">Envío gratis desde $2,500</h3><p data-en="On orders over $2,500 MXN, refrigerated shipping is on us.">En pedidos mayores a $2,500 MXN el envío refrigerado corre por nuestra cuenta.</p></div>
+          <div class="pay-card"><svg class="ico"><use href="#i-shield-check"/></svg><h3 data-en="Discreet, insured packaging">Empaque discreto y asegurado</h3><p data-en="Neutral box with no logos, trackable guide and shipping insurance on every order.">Caja neutra sin logotipos, guía rastreable y seguro de envío incluido en todos los pedidos.</p></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Clientes -->
-  <section class="sec">
-    <div class="eyebrow" data-en="Customers / 04">Clientes / 04</div>
+  <!-- ===== FAQ ===== -->
+  <section class="section container" id="faq" style="max-width:56rem">
     <div class="sec-head">
-      <h2 data-en="Who we sell to">A quién vendemos</h2>
-      <span class="badge-ruo">Research use only</span>
+      <h2><span data-en="Frequently asked ">Preguntas </span><span class="text-gradient" data-en="questions">frecuentes</span></h2>
+      <p data-en="Everything you need to know before your first order.">Todo lo que necesitas saber antes de tu primer pedido.</p>
     </div>
-    <div class="cards3">
-      <div class="infocard"><div class="num">01</div><div class="h" data-en="Individual researchers">Usuario final</div><p data-en="From a single vial, with the batch COA. Reconstitution and storage guides included.">Desde 1 vial, con el COA de su lote. Guías de reconstitución y almacenaje incluidas.</p></div>
-      <div class="infocard"><div class="num">02</div><div class="h" data-en="Clinics &amp; doctors">Clínicas y doctores</div><p data-en="Tiered pricing from 10 vials, scheduled restock and CFDI 4.0 invoicing.">Precios escalonados desde 10 viales, reabasto programado y factura CFDI 4.0.</p></div>
-      <div class="infocard"><div class="num hot">03</div><div class="h" data-en="Americans living in Mexico">Americanos residentes en México</div><p data-en="English support, verifiable COA and payment in USD or MXN. Your trusted provider in Mexico.">Soporte en inglés, COA verificable y pago en USD o MXN. Tu proveedor de confianza en México.</p></div>
-    </div>
-  </section>
-
-  <!-- Logística -->
-  <section class="sec" id="logistica" style="background:var(--paper)">
-    <div class="eyebrow" data-en="Logistics / 06">Logística / 06</div>
-    <div class="sec-head"><h2 data-en="Shipping &amp; payment">Envíos y pago</h2></div>
-    <div class="cards3">
-      <div class="infocard on-white"><div class="k" data-en="Coverage">Cobertura</div><div class="h" data-en="All of Mexico">Toda la República</div><p data-en="Ships from Baja California with Estafeta and DHL — cold pack and tracking included.">Salida desde Baja California con Estafeta y DHL — empaque en frío y rastreo incluidos.</p></div>
-      <div class="infocard on-white"><div class="k" data-en="Payment">Pago</div><div class="h" data-en="Cards, SPEI, OXXO, MSI">Tarjeta, SPEI, OXXO, MSI</div><p data-en="3 and 6 months interest-free from $3,000 MXN. CFDI 4.0 invoicing on request.">3 y 6 meses sin intereses desde $3,000 MXN. Factura CFDI 4.0 a solicitud.</p></div>
-      <div class="infocard on-white"><div class="k" data-en="Support">Soporte</div><div class="h" data-en="WhatsApp, 9 am – 7 pm">WhatsApp, 9 am – 7 pm</div><p data-en="Reconstitution and storage questions answered by our lab team.">Dudas de reconstitución y almacenaje resueltas por nuestro equipo de laboratorio.</p></div>
+    <div class="faq-list">
+      <details class="faq-item"><summary><span data-en="Are peptides legal in Mexico?">¿Los péptidos son legales en México?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="Aminos MX products are sold exclusively as reagents for scientific laboratory research. They are not medicines, and are not intended for human consumption or for the diagnosis or treatment of disease. By purchasing, you declare you will use them solely for research purposes under applicable regulations.">Los productos de Aminos MX se venden exclusivamente como reactivos para investigación científica en laboratorio. No son medicamentos, no están destinados al consumo humano ni a diagnóstico o tratamiento de enfermedades. Al comprar, declaras que los utilizarás únicamente con fines de investigación conforme a la normativa aplicable.</div></details>
+      <details class="faq-item"><summary><span data-en="What does it mean that a peptide is lyophilized?">¿Qué significa que un péptido esté liofilizado?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="Lyophilization is a freeze-drying process that removes water from the peptide, leaving it as a stable powder. This extends shelf life and allows safe transport. Before research use it is reconstituted with bacteriostatic water.">La liofilización es un proceso de secado por congelación que elimina el agua del péptido, dejándolo en forma de polvo estable. Esto extiende su vida útil y permite transportarlo de forma segura. Antes de su uso en investigación, se reconstituye con agua bacteriostática.</div></details>
+      <details class="faq-item"><summary><span data-en="How should I store peptides?">¿Cómo debo almacenar los péptidos?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="Lyophilized: refrigerate at 2–8 °C; for long-term storage (over 3 months) freeze at −20 °C. Once reconstituted: always keep refrigerated (2–8 °C) and use within the period stated on the product sheet. Avoid direct light and freeze/thaw cycles.">Liofilizados: refrigéralos entre 2–8 °C; para almacenamiento prolongado (más de 3 meses) congélalos a −20 °C. Una vez reconstituidos: mantenlos siempre en refrigeración (2–8 °C) y utilízalos dentro del periodo indicado en la ficha del producto. Evita la luz directa y los ciclos de congelación/descongelación.</div></details>
+      <details class="faq-item"><summary><span data-en="How do I verify my batch's purity?">¿Cómo verifico la pureza de mi lote?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="Every order includes access to your batch's certificate of analysis (COA), issued by an independent laboratory. The COA shows HPLC purity, identity confirmation by mass spectrometry and residual water content.">Cada pedido incluye acceso al certificado de análisis (COA) de tu lote, emitido por un laboratorio independiente. El COA muestra la pureza por HPLC, la confirmación de identidad por espectrometría de masas y el contenido de agua residual.</div></details>
+      <details class="faq-item"><summary><span data-en="How long does shipping take and how does it travel?">¿Cuánto tarda mi envío y cómo viaja?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="We ship nationwide via Estafeta and DHL in isothermal packaging with refrigerant, keeping 2–8 °C. Mexico City and metro areas: 24 h. Rest of the country: 48–72 h. You receive your tracking number by email and WhatsApp as soon as your order ships.">Enviamos a todo México por Estafeta y DHL en empaque isotérmico con refrigerante, manteniendo 2–8 °C. CDMX y zonas metropolitanas: 24 h. Resto del país: 48–72 h. Recibes tu número de guía por correo y WhatsApp en cuanto sale tu pedido.</div></details>
+      <details class="faq-item"><summary><span data-en="What payment methods do you accept?">¿Qué métodos de pago aceptan?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="Credit/debit card (Visa, Mastercard, AMEX), SPEI transfer and Mercado Pago (including cash at OXXO and 7-Eleven). All charges are in Mexican pesos. In CDMX we offer cash on delivery in selected areas.">Tarjeta de crédito/débito (Visa, Mastercard, AMEX), transferencia SPEI y Mercado Pago (incluye pago en efectivo en OXXO y 7-Eleven). Todos los cargos son en pesos mexicanos. En CDMX contamos con pago contra entrega en zonas seleccionadas.</div></details>
+      <details class="faq-item"><summary><span data-en="Do you ship internationally?">¿Hacen envíos internacionales?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="For now we only ship within Mexico. This lets us guarantee the cold chain and short delivery times.">Por el momento únicamente realizamos envíos dentro de la República Mexicana. Esto nos permite garantizar la cadena de frío y tiempos de entrega cortos.</div></details>
+      <details class="faq-item"><summary><span data-en="Do you have a return policy?">¿Tienen política de devolución?</span><svg class="ico chev"><use href="#i-chevron-down"/></svg></summary><div class="faq-a" data-en="If your order arrives damaged, incomplete or with a compromised cold chain, we replace it at no cost. Just report it within 48 h of delivery with photos of the packaging. Due to the nature of the product we do not accept returns of opened vials.">Si tu pedido llega dañado, incompleto o con la cadena de frío comprometida, lo reponemos sin costo. Solo necesitas reportarlo dentro de las 48 h posteriores a la entrega con fotos del empaque. Por la naturaleza del producto no aceptamos devoluciones de viales abiertos.</div></details>
     </div>
   </section>
-
 </main>
 
-<!-- Footer -->
-<footer class="footer">
-  <div class="footer-grid">
-    <div>
-      <span class="wordmark wordmark--md" style="margin-bottom:14px">
-        <span class="word"><span class="amino">Aminos</span><span class="mx">MX</span></span>
-        <span class="tag">RESEARCH USE ONLY</span>
-      </span>
-      <p class="desc" data-en="High-purity research peptides imported from the USA. Shipping from Baja California to all of Mexico — for Mexican customers and Americans living in Mexico.">Péptidos de investigación de alta pureza importados de USA. Envíos desde Baja California a todo México — para clientes nacionales y americanos residentes en México.</p>
+<!-- ===== Footer ===== -->
+<footer class="footer" id="contacto">
+  <div class="container section" style="padding-block:56px">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="#inicio" aria-label="Aminos MX">
+          <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
+          <span class="brand-name">Aminos<span class="mx">MX</span></span>
+        </a>
+        <p class="desc" data-en="Online store of lyophilized peptides and research-grade amino acids in Mexico. Verified purity, cold chain and specialized support.">Venta en línea de péptidos liofilizados y aminoácidos de grado investigación en México. Pureza verificada, cadena de frío y atención especializada.</p>
+        <form class="newsletter" data-subscribe>
+          <input type="email" placeholder="tu@correo.com" aria-label="Correo" required>
+          <button type="submit" data-en="Subscribe">Suscribir</button>
+        </form>
+        <div class="fineprint" data-en="New COAs and restocks. No spam.">Nuevos COA y reabastos. Sin spam.</div>
+      </div>
+      <div>
+        <h4 data-en="Contact">Contacto</h4>
+        <ul>
+          <li><svg class="ico"><use href="#i-message-circle"/></svg> WhatsApp: +52 55 0000 0000</li>
+          <li><svg class="ico"><use href="#i-mail"/></svg> ventas@aminosmx.com</li>
+          <li><svg class="ico"><use href="#i-map-pin"/></svg> <span data-en="Baja California · Nationwide shipping">Baja California · Envíos a todo el país</span></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-en="Links">Enlaces</h4>
+        <ul>
+          <li><a href="#catalogo" data-en="Full catalog">Catálogo completo</a></li>
+          <li><a href="#envios" data-en="Payments &amp; shipping">Pagos y envíos</a></li>
+          <li><a href="#faq" data-en="FAQ">Preguntas frecuentes</a></li>
+          <li><a href="producto.html" data-en="Product sheet">Ficha de producto</a></li>
+        </ul>
+      </div>
     </div>
-    <div>
-      <h4 data-en="Catalog">Catálogo</h4>
-      <div class="col"><a href="#productos" data-en="Peptides">Péptidos</a><a href="#productos" data-en="Blends">Blends</a><a href="#productos" data-en="Amino acids">Aminoácidos</a><a href="#productos" data-en="Supplies">Insumos</a></div>
+
+    <div class="legal-note">
+      <p>
+        <svg class="ico"><use href="#i-flask"/></svg>
+        <span data-en="Legal notice: All products offered on this site are reagents intended exclusively for scientific laboratory research. They are not medicines, dietary supplements, nor intended for human or veterinary consumption, nor for the diagnosis, treatment, cure or prevention of any disease. Descriptions correspond to areas of study published in scientific literature and do not constitute directions for use. By purchasing, the customer declares to be of legal age and to have the knowledge and facilities suitable for handling laboratory reagents."><strong>Aviso legal:</strong> Todos los productos ofrecidos en este sitio son reactivos destinados exclusivamente a investigación científica en laboratorio. No son medicamentos, suplementos alimenticios ni están destinados al consumo humano o veterinario, ni al diagnóstico, tratamiento, cura o prevención de ninguna enfermedad. Las descripciones corresponden a áreas de estudio publicadas en literatura científica y no constituyen indicaciones de uso. Al realizar una compra, el cliente declara ser mayor de edad y contar con el conocimiento y las instalaciones adecuadas para el manejo de reactivos de laboratorio.</span>
+      </p>
     </div>
-    <div>
-      <h4 data-en="Help">Ayuda</h4>
-      <div class="col"><a href="#" data-en="Track my order">Rastrear pedido</a><a href="#logistica" data-en="Shipping">Envíos</a><a href="#" data-en="Returns">Devoluciones</a><a href="#" data-en="FAQ">Preguntas frecuentes</a></div>
-    </div>
-    <div>
-      <h4 data-en="Company">Empresa</h4>
-      <div class="col"><a href="#calidad" data-en="Quality">Calidad</a><a href="#calidad" data-en="Batches / COA">Lotes / COA</a><a href="#" data-en="Bulk orders">Bulk / Mayoreo</a><a href="#" data-en="Referral program">Programa de referidos</a><a href="#" data-en="Contact">Contacto</a></div>
-    </div>
-    <div>
-      <h4 data-en="Batch updates">Avisos de lote</h4>
-      <form class="subscribe" data-subscribe>
-        <input type="email" placeholder="tu@correo.com" aria-label="Correo" required>
-        <button type="submit" data-en="Join">Suscribir</button>
-      </form>
-      <div class="fineprint" data-en="New COAs and restocks. No spam.">Nuevos COA y reabastos. Sin spam.</div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span data-en="Products for laboratory research use only. Not for human or veterinary consumption.">Productos destinados exclusivamente a investigación de laboratorio. No para consumo humano ni veterinario.</span>
-    <span>© 2026 Aminos MX · <a href="#" data-en="Privacy">Privacidad</a> · <a href="#" data-en="Terms">Términos</a></span>
+    <p class="footer-copy">© <span data-year>2026</span> Aminos MX · <span data-en="All rights reserved.">Todos los derechos reservados.</span></p>
   </div>
 </footer>
 
-<!-- Mobile tab bar -->
-<nav class="tabbar" aria-label="Navegación móvil">
-  <a href="index.html" class="active"><span class="ico">◼</span><span class="lb">Home</span></a>
-  <a href="#productos"><span class="ico">◫</span><span class="lb" data-en="Shop">Tienda</span></a>
-  <a href="#calidad"><span class="ico">◎</span><span class="lb">COA</span></a>
-  <a href="#" data-open-cart><span class="ico">▤</span><span class="lb" data-en="Cart">Carrito</span></a>
-</nav>
-
-<!-- Cart drawer -->
+<!-- ===== Cart drawer ===== -->
 <div class="overlay" data-overlay></div>
 <aside class="drawer" data-drawer aria-label="Carrito" aria-hidden="true">
   <div class="drawer-head">
-    <h3 data-en="Your cart">Tu carrito</h3>
-    <button class="x" data-close-cart aria-label="Cerrar">✕</button>
+    <div class="row">
+      <h3><svg class="ico"><use href="#i-bag"/></svg> <span data-en="Your cart">Tu carrito</span></h3>
+      <button class="close" data-close-cart aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="sub" data-cart-sub></div>
   </div>
-  <div class="ship-progress">
-    <div class="track"><i data-ship-bar></i></div>
+  <div class="ship-progress" data-ship-wrap hidden>
     <div class="msg" data-ship-msg></div>
+    <div class="track"><i data-ship-bar></i></div>
   </div>
-  <div class="drawer-items" data-drawer-items>
-    <div class="drawer-empty" data-en="Your cart is empty.">Tu carrito está vacío.</div>
-  </div>
-  <div class="drawer-foot">
-    <div class="line"><span data-en="Subtotal">Subtotal</span><b data-cart-subtotal>$0</b></div>
-    <div class="line"><span data-en="Cold pack">Empaque en frío</span><b style="color:var(--blue)" data-en="Included">Incluido</b></div>
-    <div class="total"><span data-en="Total">Total</span><b data-cart-total>$0<small>MXN</small></b></div>
-    <button class="btn btn-dark btn-block" data-en="Checkout">Pagar pedido</button>
-    <div class="pay" data-en="Cards · SPEI · OXXO · 3 &amp; 6 MSI">Tarjeta · SPEI · OXXO · 3 y 6 MSI</div>
+  <div class="drawer-items" data-drawer-items></div>
+  <div class="drawer-foot" data-drawer-foot hidden>
+    <div class="line"><span data-en="Subtotal">Subtotal</span><span data-cart-subtotal>$0</span></div>
+    <div class="line"><span data-en="Refrigerated shipping">Envío refrigerado</span><span data-cart-shipping></span></div>
+    <div class="total"><span data-en="Total">Total</span><b data-cart-total>$0</b></div>
+    <button class="btn btn-primary btn-lg btn-block" data-en="Checkout">Finalizar compra</button>
   </div>
 </aside>
 
-<!-- Toast -->
-<div class="toast" data-toast>
-  <span class="tdot"></span>
-  <span class="tmsg" data-en="Added to cart">Añadido al carrito</span>
-  <span class="tcount" data-toast-count></span>
+<!-- ===== Quick-view modal ===== -->
+<div class="modal" data-modal aria-hidden="true">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" data-close-modal aria-label="Cerrar"><svg class="ico"><use href="#i-x"/></svg></button>
+    <h3 id="modalTitle" data-modal-name></h3>
+    <div class="modal-meta" data-modal-meta></div>
+    <p class="modal-desc" data-modal-desc></p>
+    <div class="modal-tags" data-modal-tags></div>
+    <ul class="modal-points">
+      <li><span class="dot"></span><span data-en="Lyophilized format for maximum stability">Formato liofilizado para máxima estabilidad</span></li>
+      <li><span class="dot"></span><span data-en="Downloadable COA per batch (HPLC / MS)">COA descargable por lote (HPLC / MS)</span></li>
+      <li><span class="dot"></span><span data-en="Cold-chain shipping with dry ice">Envío en cadena de frío con hielo seco</span></li>
+    </ul>
+    <a class="modal-ficha" href="producto.html"><span data-en="View full technical sheet">Ver ficha técnica completa</span> <svg class="ico"><use href="#i-external"/></svg></a>
+    <div class="modal-foot">
+      <div><div class="compare" data-modal-compare></div><div class="amt" data-modal-price></div></div>
+      <button class="btn btn-primary" data-modal-add><svg class="ico"><use href="#i-cart"/></svg> <span data-en="Add to cart">Agregar al carrito</span></button>
+    </div>
+  </div>
 </div>
+
+<!-- ===== Toasts ===== -->
+<div class="toast-wrap" data-toast-wrap></div>
 
 <script src="js/main.js" defer></script>
 </body>
