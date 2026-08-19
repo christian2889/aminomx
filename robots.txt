@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /cuenta.html
+Disallow: /checkout.html
+Disallow: /login.html
+
+Sitemap: https://aminomx.vercel.app/sitemap.xml

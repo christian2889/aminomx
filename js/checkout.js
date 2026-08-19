@@ -110,6 +110,36 @@ function readCart() {
             <span><b>Coordinar por WhatsApp</b><span>Te contactamos para acordar la forma de pago.</span></span></label>
         </div></div>
 
+      <div class="panel"><div class="panel-head"><h2>4 · Facturación (opcional)</h2></div>
+        <div class="panel-body">
+          <label class="check" style="margin-bottom:4px">
+            <input type="checkbox" id="fInvoice"> Necesito factura (CFDI 4.0)</label>
+          <p class="help">Puedes solicitarla dentro del mes en que compres.</p>
+          <div id="invoiceFields" hidden style="margin-top:16px"><div class="form-grid">
+            <div class="field"><label>RFC *</label>
+              <input class="input mono" id="fRfc" style="text-transform:uppercase" maxlength="13"
+                     value="${esc(profile?.billing?.rfc ?? '')}"></div>
+            <div class="field"><label>Razón social *</label>
+              <input class="input" id="fRazon" value="${esc(profile?.billing?.razon_social ?? '')}"></div>
+            <div class="field"><label>Régimen fiscal *</label>
+              <input class="input" id="fRegimen" placeholder="612 · Personas Físicas con Actividades…"
+                     value="${esc(profile?.billing?.regimen ?? '')}"></div>
+            <div class="field"><label>Uso del CFDI *</label>
+              <select class="select" id="fUso">
+                <option value="G03">G03 · Gastos en general</option>
+                <option value="G01">G01 · Adquisición de mercancías</option>
+                <option value="I08">I08 · Otra maquinaria y equipo</option>
+                <option value="S01">S01 · Sin efectos fiscales</option>
+              </select></div>
+            <div class="field"><label>CP fiscal *</label>
+              <input class="input mono" id="fCpFiscal" maxlength="5"
+                     value="${esc(profile?.billing?.cp_fiscal ?? '')}"></div>
+            <div class="field"><label>Correo para la factura</label>
+              <input class="input" id="fEmailFiscal" type="email"
+                     value="${esc(profile?.billing?.email_fiscal ?? session.user.email)}"></div>
+          </div></div>
+        </div></div>
+
       <div class="panel"><div class="panel-head"><h2>Notas del pedido (opcional)</h2></div>
         <div class="panel-body"><textarea class="textarea" id="fNotes"
           placeholder="Referencias de entrega, horario, etc."></textarea></div></div>
@@ -141,6 +171,10 @@ function readCart() {
     </div>
   </div>`;
 
+  $('#fInvoice').addEventListener('change', (e) => {
+    $('#invoiceFields').hidden = !e.target.checked;
+  });
+
   $('#placeOrder').addEventListener('click', async () => {
     const btn = $('#placeOrder');
     const req = { fName: 'nombre', fPhone: 'teléfono', fLine1: 'calle', fCity: 'ciudad', fState: 'estado', fZip: 'código postal' };
@@ -148,6 +182,23 @@ function readCart() {
       if (!$('#' + id).value.trim()) return toast(`Falta el campo: ${label}`, 'err');
     }
     btn.disabled = true; btn.textContent = 'Procesando…';
+    // Datos fiscales (si pidió factura)
+    let billing = null;
+    if ($('#fInvoice').checked) {
+      const rfc = $('#fRfc').value.trim().toUpperCase();
+      const rfcOk = /^([A-ZÑ&]{3,4})\d{6}[A-Z0-9]{3}$/.test(rfc);
+      if (!rfcOk) { btn.disabled = false; return toast('El RFC no tiene un formato válido', 'err'); }
+      for (const [id, label] of Object.entries({ fRazon: 'razón social', fRegimen: 'régimen fiscal', fCpFiscal: 'CP fiscal' })) {
+        if (!$('#' + id).value.trim()) { btn.disabled = false; return toast(`Falta para la factura: ${label}`, 'err'); }
+      }
+      billing = {
+        rfc, razon_social: $('#fRazon').value.trim(),
+        regimen: $('#fRegimen').value.trim(), uso_cfdi: $('#fUso').value,
+        cp_fiscal: $('#fCpFiscal').value.trim(),
+        email_fiscal: $('#fEmailFiscal').value.trim() || session.user.email,
+      };
+    }
+
     const address = {
       recipient: $('#fName').value.trim(), phone: $('#fPhone').value.trim(),
       line1: $('#fLine1').value.trim(), line2: $('#fLine2').value.trim() || null,
@@ -163,9 +214,15 @@ function readCart() {
         notes: $('#fNotes').value.trim() || null,
       });
 
-      // Método de pago elegido
+      // Método de pago elegido + datos fiscales
       const pay = document.querySelector('input[name="pay"]:checked')?.value ?? 'stripe';
-      await supabase.from('orders').update({ payment_method: pay }).eq('id', result.order_id);
+      const patch = { payment_method: pay };
+      if (billing) {
+        patch.billing = billing;
+        patch.invoice_requested = true;
+        patch.invoice_status = 'requested';
+      }
+      await supabase.from('orders').update(patch).eq('id', result.order_id);
 
       // Guardar dirección y perfil
       if ($('#fSave').checked) {
@@ -173,6 +230,7 @@ function readCart() {
       }
       await supabase.from('profiles').update({
         full_name: address.recipient, phone: address.phone,
+        ...(billing ? { billing } : {}),
       }).eq('id', session.user.id);
 
       // Correo de confirmación (no bloqueante)

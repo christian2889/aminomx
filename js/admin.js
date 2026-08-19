@@ -424,6 +424,20 @@ async function openOrder(id) {
           <textarea class="textarea" id="oNotes">${esc(o.admin_notes ?? '')}</textarea></div>
       </div>
 
+      ${o.invoice_requested ? `<div class="panel" style="margin-top:18px;border-color:hsl(var(--amber) / .4)">
+        <div class="panel-head"><h2>Factura solicitada (CFDI 4.0)</h2>
+          <select class="select" id="invStatus" style="min-width:150px">
+            ${['requested', 'issued', 'rejected'].map((st) => `<option value="${st}" ${
+              o.invoice_status === st ? 'selected' : ''}>${
+              { requested: 'Solicitada', issued: 'Emitida', rejected: 'Rechazada' }[st]}</option>`).join('')}
+          </select></div>
+        <div class="panel-body"><table class="data" style="min-width:auto"><tbody>
+          ${Object.entries(o.billing ?? {}).map(([k, v]) => `<tr>
+            <td class="cell-sub">${esc({ rfc: 'RFC', razon_social: 'Razón social', regimen: 'Régimen',
+              uso_cfdi: 'Uso CFDI', cp_fiscal: 'CP fiscal', email_fiscal: 'Correo fiscal' }[k] ?? k)}</td>
+            <td class="mono">${esc(v)}</td></tr>`).join('')}
+        </tbody></table></div></div>` : ''}
+
       <div class="panel" style="margin-top:18px"><div class="panel-head"><h2>Envío</h2>
         <button class="btn btn-outline btn-sm" id="quoteBtn">${icon('truck')} Cotizar Skydropx</button></div>
         <div class="panel-body">
@@ -474,6 +488,7 @@ async function openOrder(id) {
       try {
         const status = $('#oSt').value;
         const patch = { payment_status: $('#oPay').value, admin_notes: $('#oNotes').value.trim() || null };
+        if ($('#invStatus')) patch.invoice_status = $('#invStatus').value;
         if (status !== o.status) patch.status = status;
         await updateOrder(o.id, patch);
         const carrier = $('#shCarrier').value.trim(), tracking = $('#shTracking').value.trim();
@@ -485,7 +500,18 @@ async function openOrder(id) {
             ...(status === 'shipped' && !ship?.shipped_at ? { shipped_at: new Date().toISOString() } : {}),
           });
         }
-        toast('Pedido actualizado'); closeSheet(); viewPedidos();
+        // Correo automático al avanzar a enviado / entregado
+        if (patch.status && ['shipped', 'delivered'].includes(patch.status)) {
+          const tpl = patch.status === 'shipped' ? 'order_shipped' : 'order_delivered';
+          try {
+            const r = await sendOrderEmail(tpl, o.id);
+            toast(r?.skipped ? 'Pedido actualizado (Resend sin configurar)'
+                             : 'Pedido actualizado y cliente notificado');
+          } catch { toast('Pedido actualizado (no se pudo enviar el correo)'); }
+        } else {
+          toast('Pedido actualizado');
+        }
+        closeSheet(); viewPedidos();
       } catch (e) { fail(e); }
     });
 
@@ -688,6 +714,110 @@ async function viewLotes() {
   } catch (e) { fail(e); render(empty('No pudimos cargar los lotes.', 'alert')); }
 }
 
+
+/* ======================================================================
+   CUPONES
+   ====================================================================== */
+async function viewCupones() {
+  setView('Cupones', 'Descuentos y códigos promocionales',
+    `<button class="btn btn-primary btn-sm" id="newCoupon">${icon('plus')} Nuevo cupón</button>`);
+  loading();
+  try {
+    const { data, error } = await supabase.from('coupons')
+      .select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+
+    render(`<div class="panel">
+      <div class="panel-head"><h2>Cupones</h2><span class="help">${data.length} cupón(es)</span></div>
+      <div class="panel-body flush"><div class="table-wrap">
+        <table class="data"><thead><tr>
+          <th>Código</th><th>Descuento</th><th class="num">Mínimo</th>
+          <th class="num">Usos</th><th>Vigencia</th><th>Estado</th><th></th>
+        </tr></thead><tbody>
+        ${data.length ? data.map((c) => `<tr>
+          <td><div class="cell-main mono">${esc(c.code)}</div></td>
+          <td>${c.kind === 'percent' ? `${c.value}%` : mxn(c.value)}</td>
+          <td class="num">${c.min_subtotal_cents ? mxn(c.min_subtotal_cents) : '—'}</td>
+          <td class="num">${c.used_count}${c.max_uses ? ` / ${c.max_uses}` : ''}</td>
+          <td>${c.expires_at ? fechaMX(c.expires_at) : 'Sin límite'}</td>
+          <td>${c.active ? '<span class="state active">Activo</span>'
+                         : '<span class="state draft">Inactivo</span>'}</td>
+          <td><div class="row-actions">
+            <button class="btn btn-outline btn-sm" data-coupon="${esc(c.code)}">${icon('pencil')}</button>
+            <button class="btn btn-outline btn-sm" data-coupon-del="${esc(c.code)}">${icon('trash')}</button>
+          </div></td></tr>`).join('')
+          : `<tr><td colspan="7">${empty('Sin cupones. Crea el primero.', 'receipt')}</td></tr>`}
+        </tbody></table></div></div></div>`);
+
+    const editCoupon = (c) => {
+      const v = c ?? { kind: 'percent', active: true, value: 10, min_subtotal_cents: 0 };
+      openSheet(c ? `Cupón ${c.code}` : 'Nuevo cupón', `
+        <form id="cForm"><div class="form-grid">
+          <div class="field"><label>Código *</label>
+            <input class="input mono" name="code" required value="${esc(v.code ?? '')}"
+                   ${c ? 'readonly' : ''} placeholder="BIENVENIDA" style="text-transform:uppercase"></div>
+          <div class="field"><label>Tipo</label>
+            <select class="select" name="kind">
+              <option value="percent" ${v.kind === 'percent' ? 'selected' : ''}>Porcentaje (%)</option>
+              <option value="fixed" ${v.kind === 'fixed' ? 'selected' : ''}>Monto fijo (MXN)</option>
+            </select></div>
+          <div class="field"><label>Valor *</label>
+            <input class="input" name="value" type="number" min="1" required
+                   value="${v.kind === 'fixed' ? (v.value / 100) : v.value}">
+            <span class="help">En % (1–100) o en pesos según el tipo.</span></div>
+          <div class="field"><label>Compra mínima (MXN)</label>
+            <input class="input" name="min" type="number" min="0"
+                   value="${(v.min_subtotal_cents ?? 0) / 100}"></div>
+          <div class="field"><label>Usos máximos</label>
+            <input class="input" name="max_uses" type="number" min="1" value="${v.max_uses ?? ''}"
+                   placeholder="sin límite"></div>
+          <div class="field"><label>Expira</label>
+            <input class="input" name="expires" type="date"
+                   value="${v.expires_at ? String(v.expires_at).slice(0, 10) : ''}"></div>
+          <div class="field span-2"><label class="check">
+            <input type="checkbox" name="active" ${v.active ? 'checked' : ''}> Cupón activo</label></div>
+        </div></form>`,
+        `<button class="btn btn-outline" data-close-sheet>Cancelar</button>
+         <button class="btn btn-primary" id="saveCoupon">Guardar</button>`);
+
+      $('#saveCoupon').addEventListener('click', async () => {
+        const f = new FormData($('#cForm'));
+        const kind = f.get('kind');
+        const raw = Number(f.get('value'));
+        if (kind === 'percent' && (raw < 1 || raw > 100)) {
+          return toast('El porcentaje debe estar entre 1 y 100', 'err');
+        }
+        const row = {
+          code: f.get('code').trim().toUpperCase(),
+          kind,
+          value: kind === 'fixed' ? Math.round(raw * 100) : Math.round(raw),
+          min_subtotal_cents: Math.round(Number(f.get('min') || 0) * 100),
+          max_uses: f.get('max_uses') ? Number(f.get('max_uses')) : null,
+          expires_at: f.get('expires') || null,
+          active: f.get('active') === 'on',
+        };
+        if (!row.code) return toast('El código es obligatorio', 'err');
+        try {
+          const { error } = await supabase.from('coupons').upsert(row, { onConflict: 'code' });
+          if (error) throw error;
+          toast('Cupón guardado'); closeSheet(); viewCupones();
+        } catch (e) { fail(e); }
+      });
+    };
+
+    $('#newCoupon').addEventListener('click', () => editCoupon(null));
+    $('#viewBody').onclick = ((e) => {
+      const ed = e.target.closest('[data-coupon]');
+      if (ed) return editCoupon(data.find((c) => c.code === ed.dataset.coupon));
+      const del = e.target.closest('[data-coupon-del]');
+      if (del && confirm(`¿Eliminar el cupón ${del.dataset.couponDel}?`)) {
+        supabase.from('coupons').delete().eq('code', del.dataset.couponDel)
+          .then(() => { toast('Cupón eliminado'); viewCupones(); });
+      }
+    });
+  } catch (e) { fail(e); render(empty('No pudimos cargar los cupones.', 'alert')); }
+}
+
 /* ======================================================================
    AJUSTES
    ====================================================================== */
@@ -753,7 +883,8 @@ async function viewAjustes() {
    ====================================================================== */
 const VIEWS = {
   resumen: viewResumen, pedidos: viewPedidos, envios: viewEnvios,
-  clientes: viewClientes, productos: viewProductos, lotes: viewLotes, ajustes: viewAjustes,
+  clientes: viewClientes, productos: viewProductos, lotes: viewLotes,
+  cupones: viewCupones, ajustes: viewAjustes,
 };
 
 function go(view) {

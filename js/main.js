@@ -282,7 +282,7 @@
       "</button>" +
       '<div class="pcard-body">' +
         '<p class="pcard-kicker">' + esc(catLabel(p.category)) + " · " + esc(T(p.presEs, p.presEn)) + "</p>" +
-        '<button class="pcard-name" data-view="' + p.id + '">' + esc(p.name) + "</button>" +
+        '<a class="pcard-name" href="producto.html?p=' + encodeURIComponent(p.id) + '">' + esc(p.name) + "</a>" +
         '<div class="pcard-tags">' + tags + "</div>" +
         '<div class="pcard-foot">' +
           '<div class="pcard-price">' + (p.compareAt ? '<div class="compare">' + fmt(p.compareAt) + "</div>" : "") +
@@ -316,6 +316,8 @@
     $("[data-modal-price]").textContent = fmt(p.price);
     $("[data-modal-compare]").textContent = p.compareAt ? fmt(p.compareAt) : "";
     $("[data-modal-add]").setAttribute("data-add-modal", p.id);
+    var ficha = $(".modal-ficha");
+    if (ficha) ficha.href = "producto.html?p=" + encodeURIComponent(p.id);
     modal.classList.add("show"); modal.setAttribute("aria-hidden", "false");
   }
   function closeModal() { if (modal) { modal.classList.remove("show"); modal.setAttribute("aria-hidden", "true"); } }
@@ -515,7 +517,10 @@
     var pdec = $("[data-pdp-dec]"), pinc = $("[data-pdp-inc]");
     if (pdec) pdec.addEventListener("click", function () { setPq(pq - 1); });
     if (pinc) pinc.addEventListener("click", function () { setPq(pq + 1); });
-    pdpAdd.addEventListener("click", function () { addToCart(pdpAdd.getAttribute("data-add-pdp"), pq); openCart(); });
+    pdpAdd.addEventListener("click", function () {
+      var slug = pdpAdd.getAttribute("data-add-pdp");
+      if (slug) { addToCart(slug, pq); openCart(); }
+    });
     var wish = $("[data-wish]");
     if (wish) wish.addEventListener("click", function () {
       var on = wish.classList.toggle("on");
