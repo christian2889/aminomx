@@ -123,6 +123,7 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 .badge-outline { border:1px solid hsl(var(--primary) / .4); background:hsl(var(--primary) / .1); color:hsl(var(--primary)); }
 .badge-amber { background:hsl(var(--amber) / .9); color:#451a03; }
 .badge-sky { background:hsl(var(--sky) / .9); color:#082f49; }
+.badge-soon { background:hsl(var(--muted-fg) / .22); color:hsl(var(--fg)); border:1px solid hsl(var(--border)); backdrop-filter:blur(4px); }
 .badge-purity { border:1px solid hsl(var(--primary) / .4); background:hsl(var(--bg) / .6); color:hsl(var(--primary)); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
 
 /* ---------- Buttons ---------- */
@@ -239,7 +240,13 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 .pcard-price .amt { font-size:1.25rem; font-weight:800; }
 .pcard-stock { margin-top:8px; display:flex; align-items:center; gap:6px; font-size:.68rem; color:hsl(var(--muted-fg)); }
 .pcard-stock.low { color:hsl(var(--amber)); }
+.pcard-stock.soon { color:hsl(var(--muted-fg)); }
 .pcard-stock .ico { width:12px; height:12px; }
+
+/* Producto anunciado pero aún sin existencias: se ve, no se compra. */
+.pcard.is-soon .pcard-media { filter:saturate(.45) opacity(.72); }
+.pcard.is-soon .pcard-price .amt { font-size:.95rem; color:hsl(var(--muted-fg)); letter-spacing:.02em; }
+.pcard.is-soon .btn[disabled] { opacity:.65; cursor:not-allowed; }
 .catalog-empty { border:1px solid hsl(var(--border) / .6); border-radius:calc(var(--radius) + 4px); padding:48px; text-align:center; color:hsl(var(--muted-fg)); }
 
 /* Vial SVG scaling */

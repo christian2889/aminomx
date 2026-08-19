@@ -58,8 +58,9 @@ function setSEO(p, cat) {
     offers: {
       '@type': 'Offer', url, priceCurrency: 'MXN',
       price: (p.price_cents / 100).toFixed(2),
-      availability: p.stock > 0
-        ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability: p.coming_soon
+        ? 'https://schema.org/PreOrder'
+        : (p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'),
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@type': 'Organization', name: 'Aminos MX' },
     },
@@ -116,10 +117,14 @@ async function renderRelated(p) {
   const box = $('[data-pdp-related]');
   if (!box) return;
   const { data } = await supabase.from('products')
-    .select('slug, name, price_cents, product_images(url, position)')
+    .select('slug, name, price_cents, coming_soon, product_images(url, position)')
     .eq('status', 'active').eq('category_id', p.category_id)
-    .neq('id', p.id).limit(4);
-  const list = data ?? [];
+    .neq('id', p.id).limit(8);
+  // Lo comprable primero: no tiene caso rematar la ficha con cuatro
+  // "próximamente" cuando hay algo que sí se puede llevar hoy.
+  const list = (data ?? [])
+    .sort((a, b) => (a.coming_soon ? 1 : 0) - (b.coming_soon ? 1 : 0))
+    .slice(0, 4);
   if (!list.length) { box.closest('section')?.remove(); return; }
   box.innerHTML = list.map((r) => {
     const img = (r.product_images ?? []).sort((a, b) => a.position - b.position)[0]?.url;
@@ -128,7 +133,7 @@ async function renderRelated(p) {
         ? `<img src="${esc(img)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`
         : '🧪'}</div>
       <div><div class="m-name">${esc(r.name)}</div>
-        <div class="m-price">${mxn(r.price_cents)}</div></div></a>`;
+        <div class="m-price">${r.coming_soon ? T('Próximamente', 'Coming soon') : mxn(r.price_cents)}</div></div></a>`;
   }).join('');
 }
 
@@ -160,13 +165,24 @@ async function renderRelated(p) {
   $('[data-pdp-pres]').textContent = (lang() === 'en' ? p.presentation_en : p.presentation_es) || '—';
 
   // Precio
-  $('[data-pdp-price]').innerHTML = `${mxn(p.price_cents)}<small>MXN</small>`;
   const cmp = $('[data-pdp-compare]');
-  if (p.compare_at_cents) cmp.textContent = mxn(p.compare_at_cents); else cmp.remove();
+  if (p.coming_soon) {
+    $('[data-pdp-price]').textContent = T('Por anunciar', 'To be announced');
+    cmp.remove();
+  } else {
+    $('[data-pdp-price]').innerHTML = `${mxn(p.price_cents)}<small>MXN</small>`;
+    if (p.compare_at_cents) cmp.textContent = mxn(p.compare_at_cents); else cmp.remove();
+  }
 
   // Stock
   const stockEl = $('[data-pdp-stock]');
-  if (p.stock <= 0) {
+  if (p.coming_soon) {
+    stockEl.textContent = T('Esperando disponibilidad · escríbenos para avisarte cuando llegue',
+                            'Awaiting availability · message us and we will let you know');
+    const buy = $('[data-add-pdp]');
+    buy.disabled = true; buy.style.opacity = '.5';
+    buy.querySelector('span').textContent = T('Próximamente', 'Coming soon');
+  } else if (p.stock <= 0) {
     stockEl.textContent = T('Agotado temporalmente', 'Temporarily out of stock');
     stockEl.closest('.pdp-stock')?.style.setProperty('color', 'hsl(var(--destructive))');
     const buy = $('[data-add-pdp]');

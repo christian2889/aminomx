@@ -136,6 +136,11 @@ async function viewProductos() {
               <option value="draft">Borradores</option>
               <option value="archived">Archivados</option>
             </select>
+            <select class="select" id="pAvail">
+              <option value="">Disponibles y en espera</option>
+              <option value="si">Solo comprables</option>
+              <option value="no">Solo en espera</option>
+            </select>
           </div>
           <span class="help">${products.length} producto(s)</span>
         </div>
@@ -148,10 +153,11 @@ async function viewProductos() {
 
     const rows = () => {
       const q = ($('#pSearch').value || '').toLowerCase();
-      const cat = $('#pCat').value, st = $('#pStatus').value;
+      const cat = $('#pCat').value, st = $('#pStatus').value, av = $('#pAvail').value;
       const list = products.filter((p) =>
         (!q || p.name.toLowerCase().includes(q) || (p.sku ?? '').toLowerCase().includes(q)) &&
-        (!cat || p.category_id === cat) && (!st || p.status === st));
+        (!cat || p.category_id === cat) && (!st || p.status === st) &&
+        (!av || (av === 'si' ? !p.coming_soon : !!p.coming_soon)));
       $('#pRows').innerHTML = list.length ? list.map((p) => {
         const img = p.images?.[0]?.url;
         return `<tr>
@@ -165,7 +171,8 @@ async function viewProductos() {
           <td class="num">${mxn(p.price_cents)}${p.compare_at_cents
             ? `<div class="cell-sub" style="text-decoration:line-through">${mxn(p.compare_at_cents)}</div>` : ''}</td>
           <td class="num" ${p.stock <= 10 ? 'style="color:hsl(var(--amber))"' : ''}>${p.stock}</td>
-          <td>${stateChip(p.status, { active: 'Activo', draft: 'Borrador', archived: 'Archivado' })}</td>
+          <td>${stateChip(p.status, { active: 'Activo', draft: 'Borrador', archived: 'Archivado' })}${
+            p.coming_soon ? '<div class="cell-sub">Esperando disponibilidad</div>' : ''}</td>
           <td><div class="row-actions">
             <button class="btn btn-outline btn-sm" data-edit="${p.id}">${icon('pencil')}</button>
             <button class="btn btn-outline btn-sm" data-del="${p.id}">${icon('trash')}</button>
@@ -173,7 +180,7 @@ async function viewProductos() {
       }).join('') : `<tr><td colspan="6">${empty('Sin productos que coincidan.', 'package')}</td></tr>`;
     };
     rows();
-    ['#pSearch', '#pCat', '#pStatus'].forEach((s) => $(s).addEventListener('input', rows));
+    ['#pSearch', '#pCat', '#pStatus', '#pAvail'].forEach((s) => $(s).addEventListener('input', rows));
 
     $('#viewBody').onclick = ( (e) => {
       const ed = e.target.closest('[data-edit]');
@@ -237,6 +244,8 @@ function editProduct(p) {
         <div class="field span-2" style="flex-direction:row;gap:20px;flex-wrap:wrap">
           <label class="check"><input type="checkbox" name="bestseller" ${v.bestseller ? 'checked' : ''}> Más vendido</label>
           <label class="check"><input type="checkbox" name="is_new" ${v.is_new ? 'checked' : ''}> Nuevo</label>
+          <label class="check" title="Se muestra en el catálogo pero no se puede comprar">
+            <input type="checkbox" name="coming_soon" ${v.coming_soon ? 'checked' : ''}> Esperando disponibilidad</label>
         </div>
       </div>
 
@@ -276,6 +285,7 @@ function editProduct(p) {
       tags_en: f.get('tags_en').split(',').map((s) => s.trim()).filter(Boolean),
       bestseller: f.get('bestseller') === 'on',
       is_new: f.get('is_new') === 'on',
+      coming_soon: f.get('coming_soon') === 'on',
     };
     if (!payload.name) return toast('El nombre es obligatorio', 'err');
     try {
