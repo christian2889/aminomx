@@ -117,11 +117,15 @@ Usa la **API v2 de Skydropx PRO** (OAuth2 `client_credentials`).
    `SKYDROPX_WEBHOOK_SECRET` (inventa uno), y la dirección de origen
    `ORIGIN_STREET`, `ORIGIN_CITY`, `ORIGIN_STATE`, `ORIGIN_NEIGHBORHOOD`,
    `ORIGIN_ZIP`, `ORIGIN_PHONE`, `ORIGIN_EMAIL`.
-3. En Skydropx registra el webhook:
+3. En Skydropx → Configuración → **Conexiones webhook** registra
    `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/skydropx-webhook`
-   con el header `x-skydropx-signature: <SKYDROPX_WEBHOOK_SECRET>`.
-4. Mapa de estados: `in_transit → shipped`, `delivered → delivered`
-   (con correo automático al cliente en ambos).
+   con método de autenticación **Token** y header `Authorization` (default).
+   El token que captures ahí va igual en `SKYDROPX_WEBHOOK_SECRET`.
+   La función corre con `verify_jwt = false` porque valida el token ella
+   misma; con `verify_jwt = true` el gateway rechaza todo evento.
+4. Mapa de estados: `picked_up`/`in_transit` → `shipped`,
+   `delivered` → `delivered` (con correo automático al cliente en ambos).
+   Nunca retrocede un pedido que ya avanzó.
 
 Desde el panel: **Pedido → Envío → Cotizar Skydropx** lista las tarifas
 ordenadas por precio y **Generar guía** crea la guía con la que elijas,

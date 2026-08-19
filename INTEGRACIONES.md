@@ -147,12 +147,27 @@ Sin `RESEND_API_KEY` la función responde `skipped` y lo anota en la tabla
    - *Clave secreta del cliente (API Secret key)* → `SKYDROPX_CLIENT_SECRET`
 3. Guarda los `ORIGIN_*` de tu dirección de bodega (sin ellos la cotización
    sale mal: Skydropx no sabe desde dónde sale el paquete).
-4. Inventa un `SKYDROPX_WEBHOOK_SECRET` (cadena larga aleatoria) y guárdalo.
-5. En Skydropx → **Webhooks** registra:
-   - URL: `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/skydropx-webhook`
-   - Header: `x-skydropx-signature: <el mismo SKYDROPX_WEBHOOK_SECRET>`
-6. Estados: `in_transit → shipped`, `delivered → delivered`, con correo
-   automático al cliente en ambos.
+4. En Skydropx → **Configuración → Conexiones webhook → Nuevo**:
+   - **Nombre:** `AMINO MX`
+   - **URL:** `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/skydropx-webhook`
+   - **Sección:** `Envíos`
+   - **Eventos:** todos los de envío (Created, Picked up, In transit,
+     Last mile, Delivery attempt, Delivered, Exception, Canceled…)
+   - **Método de autenticación:** `Token`
+   - **Token o clave secreta:** invéntalo tú, una cadena larga aleatoria
+   - **Header:** déjalo en `Authorization` (el default)
+5. Copia **ese mismo token** a Supabase como `SKYDROPX_WEBHOOK_SECRET`.
+6. Estados: `in_transit`/`picked_up` → pedido **enviado**,
+   `delivered` → pedido **entregado**, con correo automático en ambos.
+
+> **Por qué importa el header.** Skydropx manda el token como
+> `Authorization: Bearer <token>`. Ese header choca con la verificación de
+> JWT de Supabase, así que `skydropx-webhook` está desplegada con
+> `verify_jwt = false` y valida el token ella misma (comparación de tiempo
+> constante). Si algún día la redespliegas, **no olvides el flag**: con
+> `verify_jwt = true` el gateway responde `UNAUTHORIZED_INVALID_JWT_FORMAT`
+> y ningún evento llega. La función también acepta el header alterno
+> `x-skydropx-signature` y el token sin el prefijo `Bearer`.
 
 **Cómo se usa desde el panel:** Admin → abre un pedido → *Envío* →
 **Cotizar Skydropx**. Aparece la tabla de tarifas ordenada de más barata a

@@ -1,6 +1,22 @@
 // ============================================================================
 // skydropx-webhook — actualiza estado de envío y notifica al cliente
 // Secrets: SKYDROPX_WEBHOOK_SECRET, SUPABASE_*
+//
+// verify_jwt = false a propósito: quien llama es Skydropx, no un usuario con
+// sesión. Si se deja en true, el gateway de Supabase responde
+// UNAUTHORIZED_INVALID_JWT_FORMAT antes de ejecutar nada, porque el header
+// Authorization trae el token de Skydropx y no un JWT. La autenticación la
+// hace esta función con el token compartido.
+//
+// Autenticación: Skydropx manda el token en el header que elijas. Por default
+// usa `Authorization: Bearer <token>`, pero el nombre es editable en su panel,
+// así que aceptamos también `x-skydropx-signature` y el token pelón sin
+// prefijo "Bearer". La comparación es de tiempo constante.
+//
+// Payload: Skydropx tiene dos formatos vivos según la sección/evento:
+//   v1     { type, action, timestamp, data: { id, carrier, status, tracking_number } }
+//   JSON:API { data: { id, type: "packages", attributes: { ... } } }
+// Leemos ambos.
 // ============================================================================
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { json } from '../_shared/cors.ts';
@@ -11,67 +27,145 @@ const admin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-// Estados de Skydropx → estados internos
+// Estados de Skydropx → estados internos.
+// Skydropx los manda en MAYÚSCULAS; normalizamos a minúsculas antes de buscar.
 const MAP: Record<string, { shipment: string; order?: string }> = {
-  created:    { shipment: 'created' },
-  in_transit: { shipment: 'in_transit', order: 'shipped' },
+  pending:          { shipment: 'pending' },
+  created:          { shipment: 'created' },
+  label_created:    { shipment: 'label_created' },
+  picked_up:        { shipment: 'picked_up', order: 'shipped' },
+  in_transit:       { shipment: 'in_transit', order: 'shipped' },
+  last_mile:        { shipment: 'out_for_delivery', order: 'shipped' },
   out_for_delivery: { shipment: 'out_for_delivery', order: 'shipped' },
-  delivered:  { shipment: 'delivered', order: 'delivered' },
-  exception:  { shipment: 'exception' },
-  cancelled:  { shipment: 'cancelled' },
+  delivery_attempt: { shipment: 'delivery_attempt' },
+  delivered:        { shipment: 'delivered', order: 'delivered' },
+  exception:        { shipment: 'exception' },
+  canceled:         { shipment: 'cancelled' },
+  cancelled:        { shipment: 'cancelled' },
+  returned:         { shipment: 'returned' },
 };
 
-Deno.serve(async (req) => {
-  if (!SECRET) return json({ error: 'webhook sin configurar' }, 501);
-  {
-    const got = req.headers.get('x-skydropx-signature') ?? req.headers.get('authorization');
-    if (got !== SECRET) return json({ error: 'firma inválida' }, 401);
+/* ------------------------------------------------------------------- auth --- */
+function constantTimeEqual(a: string, b: string): boolean {
+  const ea = new TextEncoder().encode(a);
+  const eb = new TextEncoder().encode(b);
+  // Longitudes distintas: seguimos comparando para no filtrar el largo por tiempo.
+  let diff = ea.length ^ eb.length;
+  const n = Math.max(ea.length, eb.length);
+  for (let i = 0; i < n; i++) diff |= (ea[i] ?? 0) ^ (eb[i] ?? 0);
+  return diff === 0;
+}
+
+function presentedToken(req: Request): string {
+  const raw = req.headers.get('x-skydropx-signature')
+    ?? req.headers.get('x-webhook-token')
+    ?? req.headers.get('authorization')
+    ?? '';
+  return raw.replace(/^Bearer\s+/i, '').trim();
+}
+
+/* ---------------------------------------------------------------- payload --- */
+type Any = Record<string, unknown>;
+
+const str = (v: unknown) => (v == null ? '' : String(v));
+
+/** Busca una llave en el payload sin importar en qué nivel venga. */
+function pick(payload: Any, keys: string[]): string {
+  const attrs = ((payload?.data as Any)?.attributes ?? {}) as Any;
+  const data = (payload?.data ?? {}) as Any;
+  for (const k of keys) {
+    const hit = attrs[k] ?? data[k] ?? payload[k];
+    if (hit != null && hit !== '') return str(hit);
   }
+  return '';
+}
+
+Deno.serve(async (req) => {
+  if (req.method !== 'POST') return json({ error: 'método no permitido' }, 405);
+  if (!SECRET) return json({ error: 'webhook sin configurar' }, 501);
+  if (!constantTimeEqual(presentedToken(req), SECRET)) {
+    return json({ error: 'token inválido' }, 401);
+  }
+
   try {
-    const payload = await req.json();
-    const trackingNumber = payload?.tracking_number ?? payload?.data?.tracking_number;
-    const rawStatus = String(payload?.status ?? payload?.data?.status ?? '').toLowerCase();
+    const payload = (await req.json()) as Any;
+
+    const trackingNumber = pick(payload, [
+      'tracking_number', 'trackingNumber', 'master_tracking_number',
+    ]);
+    const shipmentId = pick(payload, ['shipment_id', 'shipmentId', 'id']);
+
+    const rawStatus = pick(payload, [
+      'status', 'shipment_status', 'tracking_status', 'event', 'action',
+    ]).toLowerCase().replace(/^shipment_/, '');
+
     const mapped = MAP[rawStatus] ?? { shipment: rawStatus || 'unknown' };
 
-    const { data: shipment } = await admin
-      .from('shipments')
-      .select('id, order_id')
-      .eq('tracking_number', trackingNumber)
-      .maybeSingle();
-    if (!shipment) return json({ ok: false, reason: 'envío no encontrado' }, 404);
+    // Localizamos el envío por número de guía y, si no, por el id de Skydropx.
+    let shipment: { id: string; order_id: string } | null = null;
+    if (trackingNumber) {
+      const { data } = await admin.from('shipments')
+        .select('id, order_id').eq('tracking_number', trackingNumber).maybeSingle();
+      shipment = data ?? null;
+    }
+    if (!shipment && shipmentId) {
+      const { data } = await admin.from('shipments')
+        .select('id, order_id').eq('skydropx_shipment_id', shipmentId).maybeSingle();
+      shipment = data ?? null;
+    }
+
+    // 200 a propósito: si el envío no es nuestro, reintentar no lo va a arreglar
+    // y Skydropx dejaría el webhook en falla permanente.
+    if (!shipment) {
+      return json({ ok: false, reason: 'envío no encontrado', tracking: trackingNumber });
+    }
 
     await admin.from('shipments').update({
       status: mapped.shipment,
+      ...(trackingNumber ? { tracking_number: trackingNumber } : {}),
       ...(mapped.shipment === 'delivered' ? { delivered_at: new Date().toISOString() } : {}),
-      ...(mapped.shipment === 'in_transit' ? { shipped_at: new Date().toISOString() } : {}),
+      ...(['in_transit', 'picked_up'].includes(mapped.shipment)
+        ? { shipped_at: new Date().toISOString() } : {}),
+      updated_at: new Date().toISOString(),
     }).eq('id', shipment.id);
 
     await admin.from('shipment_events').insert({
       shipment_id: shipment.id,
       status: mapped.shipment,
-      description: payload?.description ?? payload?.data?.description ?? null,
-      location: payload?.location ?? null,
+      description: pick(payload, ['description', 'message', 'detail']) || null,
+      location: pick(payload, ['location', 'city']) || null,
     });
 
     if (mapped.order) {
-      await admin.from('orders').update({ status: mapped.order }).eq('id', shipment.order_id);
-      await admin.from('order_events').insert({
-        order_id: shipment.order_id,
-        status: mapped.order,
-        note: mapped.order === 'shipped' ? 'Pedido enviado' : 'Pedido entregado',
-      });
-      // Notificación al cliente
-      const template = mapped.order === 'shipped' ? 'order_shipped' : 'order_delivered';
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ template, order_id: shipment.order_id }),
-      }).catch(() => {});
+      // Nunca retrocedemos un pedido que ya avanzó.
+      const { data: ord } = await admin
+        .from('orders').select('status').eq('id', shipment.order_id).maybeSingle();
+      const rank: Record<string, number> = {
+        pending: 0, paid: 1, processing: 2, shipped: 3, delivered: 4,
+      };
+      const advances = (rank[mapped.order] ?? 0) > (rank[ord?.status ?? 'pending'] ?? 0);
+
+      if (advances) {
+        await admin.from('orders').update({ status: mapped.order }).eq('id', shipment.order_id);
+        await admin.from('order_events').insert({
+          order_id: shipment.order_id,
+          status: mapped.order,
+          note: mapped.order === 'shipped' ? 'Pedido enviado' : 'Pedido entregado',
+        });
+
+        const template = mapped.order === 'shipped' ? 'order_shipped' : 'order_delivered';
+        await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ template, order_id: shipment.order_id }),
+        }).catch(() => {});
+      }
     }
-    return json({ ok: true });
+
+    return json({ ok: true, status: mapped.shipment });
   } catch (e) {
     return json({ error: String(e) }, 500);
   }
