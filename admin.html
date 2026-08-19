@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel · Aminos MX</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('amx_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}</script>
+<script src="js/config.js"></script>
+</head>
+<body>
+<div class="app">
+  <!-- Barra lateral -->
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
+      <span class="brand-name">Aminos<span class="mx">MX</span><span class="ruo">Panel</span></span>
+    </a>
+
+    <div class="side-label">Operación</div>
+    <button class="side-link active" data-view="resumen"><svg class="ico"><use href="#i-gauge"/></svg> Resumen</button>
+    <button class="side-link" data-view="pedidos"><svg class="ico"><use href="#i-receipt"/></svg> Pedidos</button>
+    <button class="side-link" data-view="envios"><svg class="ico"><use href="#i-truck"/></svg> Envíos</button>
+    <button class="side-link" data-view="clientes"><svg class="ico"><use href="#i-users"/></svg> Clientes</button>
+
+    <div class="side-label">Catálogo</div>
+    <button class="side-link" data-view="productos"><svg class="ico"><use href="#i-package"/></svg> Productos</button>
+    <button class="side-link" data-view="lotes"><svg class="ico"><use href="#i-flask"/></svg> Lotes y COA</button>
+
+    <div class="side-label">Sistema</div>
+    <button class="side-link" data-view="ajustes"><svg class="ico"><use href="#i-settings"/></svg> Ajustes</button>
+
+    <div class="side-foot">
+      <div class="side-user" id="sideUser">…</div>
+      <button class="side-link" id="themeBtn"><svg class="ico"><use href="#i-moon"/></svg> Tema</button>
+      <a class="side-link" href="index.html" target="_blank" rel="noopener"><svg class="ico"><use href="#i-external"/></svg> Ver tienda</a>
+      <button class="side-link" id="logoutBtn"><svg class="ico"><use href="#i-logout"/></svg> Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <!-- Contenido -->
+  <div class="app-main">
+    <header class="app-bar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-ghost btn-icon menu-btn" id="menuBtn" aria-label="Menú">
+          <svg class="ico"><use href="#i-menu"/></svg>
+        </button>
+        <div>
+          <h1 id="viewTitle">Resumen</h1>
+          <div class="sub" id="viewSub">Estado general de la tienda</div>
+        </div>
+      </div>
+      <div id="viewActions" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+    </header>
+    <main class="app-body" id="viewBody">
+      <div class="panel"><div class="panel-body"><div class="skeleton" style="height:80px"></div></div></div>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="sideOverlay"></div>
+<div class="sheet" id="sheet"><div class="sheet-backdrop" data-close-sheet></div><div class="sheet-card" id="sheetCard"></div></div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

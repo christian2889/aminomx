@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rastrear pedido · Aminos MX</title>
+<meta name="theme-color" content="#0a0f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('amx_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}</script>
+<script src="js/config.js"></script>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="molecule-bg" style="position:absolute;inset:0;opacity:.5"></div>
+  <div class="auth-card" style="width:min(520px,100%)">
+    <a class="brand" href="index.html" style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px">
+      <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
+      <span class="brand-name">Aminos<span class="mx">MX</span></span>
+    </a>
+    <h1>Rastrear pedido</h1>
+    <p class="lead">Ingresa tu número de pedido y el correo con el que compraste.</p>
+
+    <form class="auth-form" id="trackForm" novalidate>
+      <div class="field"><label for="tNum">Número de pedido</label>
+        <input class="input" id="tNum" placeholder="AMX-2608-1024" required style="font-family:var(--mono)"></div>
+      <div class="field"><label for="tEmail">Correo electrónico</label>
+        <input class="input" type="email" id="tEmail" placeholder="tu@correo.com" required></div>
+      <div id="trackMsg"></div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Buscar pedido</button>
+    </form>
+
+    <div id="trackResult" style="margin-top:20px"></div>
+
+    <div class="auth-alt" style="margin-top:18px">
+      ¿Tienes cuenta? <a href="cuenta.html">Entra para ver todos tus pedidos</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { trackOrder, mxn, fechaHoraMX, ESTADO_PEDIDO } from './js/db.js';
+  import { injectIcons, icon } from './js/icons.js';
+  injectIcons();
+
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const PASOS = ['pending', 'paid', 'processing', 'shipped', 'delivered'];
+
+  $('#trackForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const num = $('#tNum').value.trim(), email = $('#tEmail').value.trim();
+    const msg = $('#trackMsg'), out = $('#trackResult');
+    msg.innerHTML = ''; out.innerHTML = '';
+    if (!num || !email) { msg.innerHTML = '<p class="error-text">Completa ambos campos.</p>'; return; }
+    try {
+      const data = await trackOrder(num, email);
+      if (!data) {
+        msg.innerHTML = '<p class="error-text">No encontramos ese pedido con ese correo. Revisa los datos.</p>';
+        return;
+      }
+      const idx = PASOS.indexOf(data.status);
+      out.innerHTML = `
+        <div class="panel"><div class="panel-head">
+          <h2 class="mono">${esc(data.order_number)}</h2>
+          <span class="state ${esc(data.status)}">${esc(ESTADO_PEDIDO[data.status] ?? data.status)}</span></div>
+        <div class="panel-body">
+          <ul class="timeline">
+            ${PASOS.map((p, i) => `<li class="${i <= idx ? 'done' : ''}">
+              <div class="t-title">${esc(ESTADO_PEDIDO[p])}</div></li>`).join('')}
+          </ul>
+          ${data.shipment?.tracking_number ? `
+            <p class="help" style="margin-top:14px">Guía
+              <strong class="mono">${esc(data.shipment.tracking_number)}</strong>
+              · ${esc(data.shipment.carrier ?? '')}</p>
+            ${data.shipment.tracking_url ? `<a class="btn btn-primary btn-sm" style="margin-top:10px"
+              href="${esc(data.shipment.tracking_url)}" target="_blank" rel="noopener">
+              ${icon('truck')} Rastrear con la paquetería</a>` : ''}` : ''}
+          <div style="margin-top:16px;border-top:1px solid hsl(var(--border)/.5);padding-top:12px">
+            ${(data.items ?? []).map((i) => `<div style="display:flex;justify-content:space-between;font-size:.88rem;padding:4px 0">
+              <span>${esc(i.name)} × ${i.qty}</span><strong>${mxn(i.total_cents)}</strong></div>`).join('')}
+            <div style="display:flex;justify-content:space-between;font-weight:800;margin-top:8px">
+              <span>Total</span><span style="color:hsl(var(--primary))">${mxn(data.total_cents)}</span></div>
+          </div>
+        </div></div>`;
+    } catch (err) {
+      msg.innerHTML = `<p class="error-text">${esc(err?.message ?? 'Error al consultar')}</p>`;
+    }
+  });
+</script>
+</body>
+</html>
