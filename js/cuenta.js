@@ -3,7 +3,7 @@
    ========================================================================== */
 import {
   supabase, mxn, fechaMX, fechaHoraMX, ESTADO_PEDIDO,
-  requireAuth, getProfile, signOut,
+  requireAuth, getProfile, signOut, startStripeCheckout,
 } from './db.js';
 import { injectIcons, icon } from './icons.js';
 
@@ -62,13 +62,18 @@ async function viewPedidos() {
           return `<tr>
             <td><div class="cell-main mono">${esc(o.order_number)}</div>
                 <div class="cell-sub">${o.order_items?.length ?? 0} artículo(s)</div></td>
-            <td>${stateChip(o.status)}</td>
+            <td>${stateChip(o.status)}
+              ${o.payment_status === 'paid'
+                ? '<div class="cell-sub" style="color:hsl(var(--primary))">Pagado</div>'
+                : '<div class="cell-sub">Pago pendiente</div>'}</td>
             <td>${s?.tracking_number
               ? `<div class="cell-main mono">${esc(s.tracking_number)}</div>
                  <div class="cell-sub">${esc(s.carrier ?? '')}</div>` : '<span class="help">Preparando</span>'}</td>
             <td class="num">${mxn(o.total_cents)}</td>
             <td>${fechaMX(o.created_at)}</td>
             <td><div class="row-actions">
+              ${o.payment_status !== 'paid' && !['cancelled','refunded'].includes(o.status)
+                ? `<button class="btn btn-primary btn-sm" data-pay="${o.id}">Pagar ahora</button>` : ''}
               <button class="btn btn-outline btn-sm" data-order="${o.id}">${icon('eye')} Seguir</button>
             </div></td></tr>`;
         }).join('') : `<tr><td colspan="6">${empty('Todavía no tienes pedidos. ¡Explora el catálogo!', 'receipt')}</td></tr>`}
@@ -97,6 +102,17 @@ async function openOrder(id) {
           <div class="k-value teal">${mxn(o.total_cents)}</div>
           <div class="k-note">Envío ${o.shipping_cents ? mxn(o.shipping_cents) : 'gratis'}</div></div>
       </div>
+
+      ${o.payment_status !== 'paid' && !['cancelled', 'refunded'].includes(o.status) ? `
+        <div class="panel" style="margin-top:18px;border-color:hsl(var(--primary) / .4)">
+          <div class="panel-body" style="display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+            <div><strong>Pago pendiente</strong>
+              <p class="help" style="margin-top:4px">Paga con tarjeta o genera tu ficha OXXO de forma segura.</p></div>
+            <button class="btn btn-primary" data-pay="${o.id}">Pagar ${mxn(o.total_cents)}</button>
+          </div></div>` : `
+        <div class="panel" style="margin-top:18px">
+          <div class="panel-body" style="display:flex;gap:10px;align-items:center;color:hsl(var(--primary))">
+            ${icon('check')} <strong>Pago confirmado</strong></div></div>`}
 
       ${cancelado ? '' : `<div class="panel" style="margin-top:18px">
         <div class="panel-head"><h2>Seguimiento</h2>${s?.tracking_url
@@ -282,9 +298,23 @@ function go(view) {
 
   $('#sideUser').textContent = PROFILE?.email ?? '';
   $$('[data-view]').forEach((b) => b.addEventListener('click', () => go(b.dataset.view)));
-  document.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-order]'); if (b) openOrder(b.dataset.order);
+  document.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-order]'); if (b) return openOrder(b.dataset.order);
+    const pay = e.target.closest('[data-pay]');
+    if (pay) {
+      pay.disabled = true; const txt = pay.textContent; pay.textContent = 'Abriendo…';
+      try { location.href = await startStripeCheckout(pay.dataset.pay); }
+      catch (err) { fail(err); pay.disabled = false; pay.textContent = txt; }
+    }
   });
+
+  // Aviso al volver de Stripe
+  const params = new URLSearchParams(location.search);
+  if (params.get('pago') === 'exito') {
+    toast('¡Pago recibido! Estamos preparando tu pedido.');
+  } else if (params.get('pago') === 'cancelado') {
+    toast('Pago cancelado. Tu pedido sigue guardado; puedes pagarlo cuando quieras.', 'err');
+  }
   $('#menuBtn').addEventListener('click', () => {
     $('#sidebar').classList.toggle('show'); $('#sideOverlay').classList.toggle('show');
   });

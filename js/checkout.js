@@ -2,7 +2,7 @@
    Aminos MX — Checkout
    El precio y el stock los valida el servidor (RPC create_order).
    ========================================================================== */
-import { supabase, mxn, createOrder, getProfile } from './db.js';
+import { supabase, mxn, createOrder, getProfile, startStripeCheckout } from './db.js';
 import { injectIcons, icon } from './icons.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -101,12 +101,13 @@ function readCart() {
 
       <div class="panel"><div class="panel-head"><h2>3 · Forma de pago</h2></div>
         <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
-          <label class="pay-opt"><input type="radio" name="pay" value="spei" checked>
+          <label class="pay-opt"><input type="radio" name="pay" value="stripe" checked>
+            <span><b>Pago en línea · tarjeta u OXXO</b>
+            <span>Pago seguro con Stripe: Visa, Mastercard, AMEX o ficha para pagar en OXXO.</span></span></label>
+          <label class="pay-opt"><input type="radio" name="pay" value="spei">
             <span><b>Transferencia SPEI</b><span>Te enviamos la CLABE al confirmar. Validación el mismo día hábil.</span></span></label>
-          <label class="pay-opt"><input type="radio" name="pay" value="tarjeta">
-            <span><b>Tarjeta de crédito / débito</b><span>Te contactamos por WhatsApp con el enlace de pago seguro.</span></span></label>
-          <label class="pay-opt"><input type="radio" name="pay" value="mercado-pago">
-            <span><b>Mercado Pago / OXXO</b><span>Paga con saldo, tarjeta o en efectivo en tiendas afiliadas.</span></span></label>
+          <label class="pay-opt"><input type="radio" name="pay" value="whatsapp">
+            <span><b>Coordinar por WhatsApp</b><span>Te contactamos para acordar la forma de pago.</span></span></label>
         </div></div>
 
       <div class="panel"><div class="panel-head"><h2>Notas del pedido (opcional)</h2></div>
@@ -163,7 +164,7 @@ function readCart() {
       });
 
       // Método de pago elegido
-      const pay = document.querySelector('input[name="pay"]:checked')?.value ?? 'spei';
+      const pay = document.querySelector('input[name="pay"]:checked')?.value ?? 'stripe';
       await supabase.from('orders').update({ payment_method: pay }).eq('id', result.order_id);
 
       // Guardar dirección y perfil
@@ -180,6 +181,23 @@ function readCart() {
       }).catch(() => {});
 
       localStorage.setItem('amx_cart', '[]');
+
+      // Pago en línea: redirigir a Stripe Checkout
+      if (pay === 'stripe') {
+        btn.textContent = 'Abriendo pago seguro…';
+        try {
+          location.href = await startStripeCheckout(result.order_id);
+          return;
+        } catch (err) {
+          // El pedido ya existe: el cliente puede pagarlo desde su cuenta
+          toast(`Pedido ${result.order_number} creado. ${err.message}. Puedes pagarlo desde tu cuenta.`, 'err');
+          setTimeout(() => {
+            location.href = `cuenta.html?pedido=${encodeURIComponent(result.order_number)}#pedidos`;
+          }, 3200);
+          return;
+        }
+      }
+
       location.href = `cuenta.html?pedido=${encodeURIComponent(result.order_number)}#pedidos`;
     } catch (e) {
       console.error(e);

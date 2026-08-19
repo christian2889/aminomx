@@ -44,11 +44,46 @@ Vercel (sitio estático)                Supabase (proyecto: aminomx)
 2. RPC **`create_order`** valida en el servidor precio, stock y cupón,
    descuenta stock, calcula envío (gratis ≥ $2,500 MXN) y crea el evento
    inicial. El cliente nunca fija precios.
-3. Admin lo ve en **Pedidos**: cambia estado (`pending → paid → processing →
+3. **Pago con Stripe** (si eligió "Pago en línea"): se redirige a Stripe
+   Checkout (tarjeta u OXXO, en MXN). El webhook firmado confirma el pago,
+   marca `payment_status = paid` y avanza el pedido a `paid`.
+   Si prefiere SPEI/WhatsApp, el pedido queda pendiente de pago y puede
+   pagarlo después desde su cuenta con el botón **Pagar ahora**.
+4. Admin lo ve en **Pedidos**: cambia estado (`pending → paid → processing →
    shipped → delivered`), registra pago y guía. Cada cambio crea un evento
    visible en la línea de tiempo del cliente.
-4. Cliente sigue el pedido en **cuenta.html** o, sin cuenta, en
+5. Cliente sigue el pedido en **cuenta.html** o, sin cuenta, en
    **seguimiento.html** (número de pedido + correo, RPC `track_order`).
+
+## Integración Stripe (pagos en línea)
+
+Funciones desplegadas: `stripe-checkout` (crea la sesión de pago) y
+`stripe-webhook` (confirma el pago con firma verificada).
+Acepta **tarjeta** (Visa/Mastercard/AMEX) y **OXXO** (hasta $10,000 MXN),
+cobrando en **MXN**.
+
+1. Crea tu cuenta en stripe.com y activa **México** como país de la cuenta.
+2. Supabase → **Edge Functions → Secrets**:
+   - `STRIPE_SECRET_KEY` = `sk_live_…` (o `sk_test_…` para pruebas)
+   - `SITE_URL` = `https://aminomx.vercel.app` (a dónde vuelve el cliente)
+3. En Stripe → **Developers → Webhooks**, agrega el endpoint:
+   `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/stripe-webhook`
+   con los eventos:
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`  ← OXXO pagado
+   - `checkout.session.async_payment_failed`
+   - `checkout.session.expired`
+4. Copia el **signing secret** (`whsec_…`) al secret `STRIPE_WEBHOOK_SECRET`.
+
+**Seguridad del cobro:** los importes se toman siempre de la base de datos
+(nunca del navegador); la función valida que el pedido sea del usuario
+(o de staff/admin al generar una liga de cobro), que no esté ya pagado ni
+cancelado. El webhook exige firma HMAC-SHA256 válida con tolerancia de
+5 minutos (anti-replay) y es idempotente: un pedido ya pagado no se
+reprocesa, y nunca retrocede un pedido que ya avanzó.
+
+**Prueba sin cobrar de verdad:** usa claves `sk_test_…` y la tarjeta
+`4242 4242 4242 4242` (cualquier fecha futura y CVC).
 
 ## Integración Resend (correos)
 
@@ -85,7 +120,8 @@ y `skydropx-webhook` (recibe estados y avanza el pedido + correo automático).
 
 - `products` + `product_images` (Storage `product-images`, subida desde el panel)
 - `categories`, `batches` (+ COA PDF en Storage `coa`), `coupons`
-- `orders` + `order_items` + `order_events` (línea de tiempo)
+- `orders` (+ `stripe_session_id`, `stripe_payment_intent`, `paid_at`)
+  + `order_items` + `order_events` (línea de tiempo)
 - `shipments` + `shipment_events` (guía, rastreo, Skydropx)
 - `profiles` (roles), `addresses`, `email_log`, `settings`, `admin_allowlist`
 - RPCs: `create_order`, `track_order`, `verify_batch` · Vista: `admin_stats`
@@ -95,8 +131,6 @@ y `skydropx-webhook` (recibe estados y avanza el pedido + correo automático).
 
 - [ ] Cambiar la contraseña del admin semilla.
 - [ ] Registrarte con tu Gmail (quedarás como admin automáticamente).
-- [ ] Configurar secretos de Resend y Skydropx (arriba).
+- [ ] Configurar secretos de **Stripe**, Resend y Skydropx (arriba).
 - [ ] Activar "Leaked password protection" (Supabase → Auth → Settings).
-- [ ] Pasarela de pago en línea (Stripe/Mercado Pago) — el modelo ya
-      registra `payment_method` y `payment_status`.
 - [ ] Sustituir ilustraciones por fotos reales (Admin → Productos → Imágenes).

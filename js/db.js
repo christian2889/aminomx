@@ -239,6 +239,22 @@ export async function fetchStats() {
   return data;
 }
 
+/* ------------------------------------------------- pagos (Stripe) */
+export async function startStripeCheckout(orderId) {
+  const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+    body: { order_id: orderId },
+  });
+  if (error) {
+    // La función responde 501 si aún no hay STRIPE_SECRET_KEY
+    let detail = '';
+    try { detail = (await error.context?.json())?.error ?? ''; } catch { /* ignore */ }
+    throw new Error(detail || error.message || 'No pudimos iniciar el pago');
+  }
+  if (data?.error) throw new Error(data.error);
+  if (!data?.url) throw new Error('Stripe no devolvió una URL de pago');
+  return data.url;
+}
+
 /* --------------------------------------------------- correos (Resend Fn) */
 export async function sendOrderEmail(template, orderId) {
   const { data, error } = await supabase.functions.invoke('send-email', {

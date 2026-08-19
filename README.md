@@ -65,8 +65,10 @@ El sitio ahora es una plataforma completa conectada a **Supabase**
 - **Seguimiento sin cuenta** (`seguimiento.html`) — número de pedido + correo.
 - **Panel admin** (`admin.html`) — métricas, productos con **subida de
   imágenes**, pedidos/envíos, clientes con roles, lotes/COA y ajustes.
-- **Integraciones listas**: Resend (correos) y Skydropx (envíos) como Edge
-  Functions desplegadas; solo requieren sus API keys.
+- **Pagos con Stripe** — tarjeta y OXXO en MXN desde el checkout, o botón
+  "Pagar ahora" en la cuenta; confirmación por webhook firmado.
+- **Integraciones listas**: Stripe (pagos), Resend (correos) y Skydropx
+  (envíos) como Edge Functions desplegadas; solo requieren sus API keys.
 
 Detalles de operación e integración: **[PLATAFORMA.md](PLATAFORMA.md)**.
 

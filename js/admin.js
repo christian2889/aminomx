@@ -398,6 +398,11 @@ async function openOrder(id) {
         <div class="kpi"><div class="k-label">Cliente</div>
           <div style="font-weight:700;margin-top:8px">${esc(o.customer_name || '—')}</div>
           <div class="k-note">${esc(o.email)}${o.phone ? ` · ${esc(o.phone)}` : ''}</div></div>
+        <div class="kpi"><div class="k-label">Pago</div>
+          <div style="margin-top:10px">${stateChip(o.payment_status, ESTADO_PAGO)}</div>
+          <div class="k-note">${esc(o.payment_method ?? 'sin método')}${
+            o.paid_at ? ` · ${fechaHoraMX(o.paid_at)}` : ''}${
+            o.stripe_payment_intent ? `<br><span class="mono">${esc(o.stripe_payment_intent)}</span>` : ''}</div></div>
       </div>
 
       <div class="panel" style="margin-top:18px"><div class="panel-head"><h2>Artículos</h2></div>
@@ -444,9 +449,26 @@ async function openOrder(id) {
             .map((ev) => `<li class="done"><div class="t-title">${esc(ESTADO_PEDIDO[ev.status] ?? ev.status)}</div>
               <div class="t-meta">${esc(ev.note ?? '')} · ${fechaHoraMX(ev.created_at)}</div></li>`).join('')
           || '<li class="done"><div class="t-title">Pedido creado</div></li>'}</ul></div></div>`,
-      `<button class="btn btn-outline" id="mailBtn">${icon('mail')} Enviar correo</button>
+      `${o.payment_status !== 'paid'
+          ? `<button class="btn btn-outline" id="payLinkBtn">${icon('external')} Liga de pago</button>` : ''}
+       <button class="btn btn-outline" id="mailBtn">${icon('mail')} Enviar correo</button>
        <button class="btn btn-outline" data-close-sheet>Cerrar</button>
        <button class="btn btn-primary" id="saveOrder">Guardar cambios</button>`);
+
+    $('#payLinkBtn')?.addEventListener('click', async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('stripe-checkout', {
+          body: { order_id: o.id },
+        });
+        if (error || data?.error) throw new Error(data?.error ?? 'Stripe no está configurado');
+        await navigator.clipboard.writeText(data.url).catch(() => {});
+        toast('Liga de pago copiada al portapapeles');
+      } catch (e) {
+        toast(e.message === 'Este pedido no es tuyo'
+          ? 'La liga sólo puede generarla el cliente dueño del pedido'
+          : (e.message ?? 'Stripe no está configurado'), 'err');
+      }
+    });
 
     $('#saveOrder').addEventListener('click', async () => {
       try {
@@ -699,6 +721,10 @@ async function viewAjustes() {
           <tr><td><div class="cell-main">Skydropx · guías y rastreo</div>
               <div class="cell-sub">Funciones <code>skydropx-rates</code> y <code>skydropx-webhook</code>.
               Configura <code>SKYDROPX_API_KEY</code>.</div></td>
+              <td class="num"><span class="state pending">Por configurar</span></td></tr>
+          <tr><td><div class="cell-main">Stripe · pagos en línea (tarjeta y OXXO)</div>
+              <div class="cell-sub">Funciones <code>stripe-checkout</code> y <code>stripe-webhook</code>.
+              Configura <code>STRIPE_SECRET_KEY</code> y <code>STRIPE_WEBHOOK_SECRET</code>.</div></td>
               <td class="num"><span class="state pending">Por configurar</span></td></tr>
           <tr><td><div class="cell-main">Supabase Storage</div>
               <div class="cell-sub">Buckets <code>product-images</code> y <code>coa</code> listos.</div></td>

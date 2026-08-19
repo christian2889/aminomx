@@ -249,7 +249,7 @@ create table public.shipments (
   created_at           timestamptz not null default now(),
   updated_at           timestamptz not null default now()
 );
-create index shipments_order_idx on public.shipments(order_id);
+create unique index shipments_order_uidx on public.shipments(order_id);
 create trigger shipments_updated_at before update on public.shipments
   for each row execute function public.set_updated_at();
 
