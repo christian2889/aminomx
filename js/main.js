@@ -29,7 +29,7 @@
       stock: stock, bestseller: !!flags.b, isNew: !!flags.n };
   };
 
-  var PRODUCTS = [
+  var FALLBACK_PRODUCTS = [
     // Pérdida de peso
     P("semaglutide-5","Semaglutide","perdida-peso",1890,2290,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
       "Análogo GLP-1 estudiado en investigación sobre control de apetito, sensación de saciedad y manejo de peso. Incluye certificado de análisis (COA) por lote.",
@@ -134,8 +134,50 @@
       ["Síntesis proteica","Base"],["Protein synthesis","Base"],55)
   ];
 
+  var PRODUCTS = FALLBACK_PRODUCTS;
   var byId = {};
-  PRODUCTS.forEach(function (p) { byId[p.id] = p; });
+  function reindex() {
+    byId = {};
+    PRODUCTS.forEach(function (p) { byId[p.id] = p; });
+  }
+  reindex();
+
+  /* ------------------ Catálogo en vivo desde Supabase ------------------ */
+  var CFG = window.AMX_CONFIG || {};
+  function mapRow(r) {
+    var imgs = (r.product_images || []).slice().sort(function (a, b) { return (a.position||0) - (b.position||0); });
+    return {
+      id: r.slug,
+      uuid: r.id,
+      name: r.name,
+      category: r.category_id || "otros",
+      price: Math.round((r.price_cents || 0) / 100),
+      compareAt: r.compare_at_cents ? Math.round(r.compare_at_cents / 100) : 0,
+      purity: r.purity || "",
+      presEs: r.presentation_es || "", presEn: r.presentation_en || "",
+      descEs: r.desc_es || "", descEn: r.desc_en || "",
+      tagsEs: r.tags_es || [], tagsEn: r.tags_en || [],
+      stock: r.stock || 0,
+      bestseller: !!r.bestseller, isNew: !!r.is_new,
+      image: imgs.length ? imgs[0].url : null
+    };
+  }
+  function loadCatalog() {
+    if (!CFG.SUPABASE_URL || !window.fetch) return;
+    var url = CFG.SUPABASE_URL + "/rest/v1/products" +
+      "?select=id,slug,name,category_id,presentation_es,presentation_en,purity," +
+      "price_cents,compare_at_cents,desc_es,desc_en,tags_es,tags_en,stock," +
+      "bestseller,is_new,sort_order,product_images(url,position)" +
+      "&status=eq.active&order=sort_order.asc";
+    fetch(url, { headers: { apikey: CFG.SUPABASE_KEY, Authorization: "Bearer " + CFG.SUPABASE_KEY } })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (rows) {
+        if (!rows || !rows.length) return;
+        PRODUCTS = rows.map(mapRow);
+        reindex(); renderCats(); renderFilters(); renderGrid(); renderCart();
+      })
+      .catch(function () { /* sin conexión: se mantiene el catálogo embebido */ });
+  }
 
   /* -------------------- Estado -------------------- */
   var state = {
@@ -232,13 +274,15 @@
       '<button class="pcard-media" data-view="' + p.id + '" aria-label="' + esc(p.name) + '">' +
         '<span class="bgfill" style="background:' + bg + '"></span>' +
         '<span class="molecule-bg"></span>' +
-        '<span class="vial">' + vialSVG(purityShort(p.purity)) + "</span>" +
+        (p.image
+          ? '<img class="pcard-photo" src="' + esc(p.image) + '" alt="" loading="lazy">'
+          : '<span class="vial">' + vialSVG(purityShort(p.purity)) + "</span>") +
         '<span class="tl">' + badges + "</span>" +
         '<span class="tr"><span class="badge badge-purity">' + T("Pureza ", "Purity ") + esc(p.purity) + "</span></span>" +
       "</button>" +
       '<div class="pcard-body">' +
         '<p class="pcard-kicker">' + esc(catLabel(p.category)) + " · " + esc(T(p.presEs, p.presEn)) + "</p>" +
-        '<button class="pcard-name" data-view="' + p.id + '">' + esc(p.name) + "</button>" +
+        '<a class="pcard-name" href="producto.html?p=' + encodeURIComponent(p.id) + '">' + esc(p.name) + "</a>" +
         '<div class="pcard-tags">' + tags + "</div>" +
         '<div class="pcard-foot">' +
           '<div class="pcard-price">' + (p.compareAt ? '<div class="compare">' + fmt(p.compareAt) + "</div>" : "") +
@@ -272,6 +316,8 @@
     $("[data-modal-price]").textContent = fmt(p.price);
     $("[data-modal-compare]").textContent = p.compareAt ? fmt(p.compareAt) : "";
     $("[data-modal-add]").setAttribute("data-add-modal", p.id);
+    var ficha = $(".modal-ficha");
+    if (ficha) ficha.href = "producto.html?p=" + encodeURIComponent(p.id);
     modal.classList.add("show"); modal.setAttribute("aria-hidden", "false");
   }
   function closeModal() { if (modal) { modal.classList.remove("show"); modal.setAttribute("aria-hidden", "true"); } }
@@ -419,17 +465,37 @@
 
   // Verify
   var vForm = $("[data-verify-form]");
+  function showVerify(res, raw, hit) {
+    if (!res) return;
+    res.className = "result show" + (hit ? " ok" : "");
+    res.innerHTML = hit
+      ? T("Lote <b>" + raw + "</b> \u00b7 " + hit.p + " \u00b7 Pureza " + hit.purity + " \u00b7 v\u00e1lido \u2713",
+          "Batch <b>" + raw + "</b> \u00b7 " + hit.p + " \u00b7 Purity " + hit.purity + " \u00b7 valid \u2713")
+      : T("Lote no encontrado. Revisa el c\u00f3digo impreso en el vial (p. ej. AMX-2608).",
+          "Batch not found. Check the code printed on the vial (e.g. AMX-2608).");
+  }
   if (vForm) vForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var input = $("[data-verify-input]"), res = $("[data-verify-result]");
     var raw = (input && input.value || "").trim().toUpperCase();
     if (raw && raw.indexOf("AMX") === 0 && raw.indexOf("-") === -1) raw = raw.replace("AMX", "AMX-");
-    var hit = BATCHES[raw];
-    if (res) {
-      res.className = "result show" + (hit ? " ok" : "");
-      res.innerHTML = hit
-        ? T("Lote <b>" + raw + "</b> · " + hit.p + " · Pureza " + hit.purity + " · válido ✓", "Batch <b>" + raw + "</b> · " + hit.p + " · Purity " + hit.purity + " · valid ✓")
-        : T("Lote no encontrado. Revisa el código impreso en el vial (p. ej. AMX-2608).", "Batch not found. Check the code printed on the vial (e.g. AMX-2608).");
+    if (res) { res.className = "result show"; res.textContent = T("Verificando\u2026", "Verifying\u2026"); }
+    var localHit = BATCHES[raw] || null;
+    if (CFG.SUPABASE_URL && window.fetch) {
+      fetch(CFG.SUPABASE_URL + "/rest/v1/rpc/verify_batch", {
+        method: "POST",
+        headers: { apikey: CFG.SUPABASE_KEY, Authorization: "Bearer " + CFG.SUPABASE_KEY,
+                   "Content-Type": "application/json" },
+        body: JSON.stringify({ p_code: raw })
+      })
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(function (rows) {
+          var row = rows && rows[0];
+          showVerify(res, raw, row ? { p: row.product_name || raw, purity: (row.purity_hplc || "") + "%" } : null);
+        })
+        .catch(function () { showVerify(res, raw, localHit); });
+    } else {
+      showVerify(res, raw, localHit);
     }
   });
 
@@ -451,7 +517,10 @@
     var pdec = $("[data-pdp-dec]"), pinc = $("[data-pdp-inc]");
     if (pdec) pdec.addEventListener("click", function () { setPq(pq - 1); });
     if (pinc) pinc.addEventListener("click", function () { setPq(pq + 1); });
-    pdpAdd.addEventListener("click", function () { addToCart(pdpAdd.getAttribute("data-add-pdp"), pq); openCart(); });
+    pdpAdd.addEventListener("click", function () {
+      var slug = pdpAdd.getAttribute("data-add-pdp");
+      if (slug) { addToCart(slug, pq); openCart(); }
+    });
     var wish = $("[data-wish]");
     if (wish) wish.addEventListener("click", function () {
       var on = wish.classList.toggle("on");
@@ -472,4 +541,5 @@
 
   /* -------------------- Init -------------------- */
   applyLang(); renderCats(); renderFilters(); renderGrid(); renderCart();
+  loadCatalog();
 })();

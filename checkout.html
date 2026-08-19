@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finalizar compra · Aminos MX</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('amx_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}</script>
+<script src="js/config.js"></script>
+<style>
+  .co-wrap { max-width: 1080px; margin: 0 auto; padding: 24px var(--pad) 64px; }
+  .co-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 22px; align-items: start; }
+  @media (max-width: 860px) { .co-grid { grid-template-columns: 1fr; } }
+  .co-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 0; }
+  .pay-opt { display: flex; gap: 12px; align-items: flex-start; border: 1px solid hsl(var(--border));
+    border-radius: var(--radius); padding: 14px; cursor: pointer; transition: border-color .15s; }
+  .pay-opt:has(input:checked) { border-color: hsl(var(--primary)); background: hsl(var(--primary) / .06); }
+  .pay-opt input { margin-top: 3px; accent-color: hsl(var(--primary)); }
+  .pay-opt b { display: block; font-size: .92rem; }
+  .pay-opt span { font-size: .78rem; color: hsl(var(--muted-fg)); }
+  .sum-row { display: flex; justify-content: space-between; font-size: .9rem; padding: 6px 0; color: hsl(var(--muted-fg)); }
+  .sum-row b { color: hsl(var(--fg)); font-weight: 600; }
+  .sum-total { display: flex; justify-content: space-between; padding-top: 12px; margin-top: 8px;
+    border-top: 1px solid hsl(var(--border) / .6); font-weight: 800; font-size: 1.05rem; }
+</style>
+</head>
+<body>
+<div class="co-wrap">
+  <div class="co-top">
+    <a class="brand" href="index.html">
+      <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
+      <span class="brand-name">Aminos<span class="mx">MX</span></span>
+    </a>
+    <a class="btn btn-outline btn-sm" href="index.html#catalogo">← Seguir comprando</a>
+  </div>
+
+  <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:18px">Finalizar compra</h1>
+
+  <div id="coBody">
+    <div class="panel"><div class="panel-body"><div class="skeleton" style="height:60px"></div></div></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+<script type="module" src="js/checkout.js"></script>
+</body>
+</html>

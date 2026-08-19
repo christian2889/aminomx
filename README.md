@@ -51,6 +51,29 @@ assets/         Favicon (marca ADN teal)
 - Productos para uso exclusivo de investigación de laboratorio. No para consumo
   humano ni veterinario.
 
+## Plataforma (Supabase)
+
+El sitio ahora es una plataforma completa conectada a **Supabase**
+(base de datos + auth + storage + edge functions):
+
+- **Tienda** (`index.html`, `producto.html`) — catálogo en vivo desde la base
+  (con respaldo embebido sin conexión), carrito y checkout real.
+- **Checkout** (`checkout.html`) — pedido validado en servidor (RPC), cupones,
+  envío gratis ≥ $2,500 MXN.
+- **Cuenta del cliente** (`cuenta.html`) — pedidos con línea de tiempo,
+  rastreo de guía, direcciones y perfil. Acceso en `login.html`.
+- **Seguimiento sin cuenta** (`seguimiento.html`) — número de pedido + correo.
+- **Panel admin** (`admin.html`) — métricas, productos con **subida de
+  imágenes**, pedidos/envíos, clientes con roles, lotes/COA y ajustes.
+- **Pagos con Stripe** — tarjeta y OXXO en MXN desde el checkout, o botón
+  "Pagar ahora" en la cuenta; confirmación por webhook firmado.
+- **Integraciones listas**: Stripe (pagos), Resend (correos) y Skydropx
+  (envíos) como Edge Functions desplegadas; solo requieren sus API keys.
+
+Detalles de operación: **[PLATAFORMA.md](PLATAFORMA.md)**.
+Dónde va cada API key (spoiler: en Supabase, no en Vercel):
+**[INTEGRACIONES.md](INTEGRACIONES.md)**.
+
 ## Desarrollo
 
 Sitio estático, sin build. Para verlo en local:
