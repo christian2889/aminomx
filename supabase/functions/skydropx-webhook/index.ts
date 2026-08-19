@@ -102,16 +102,21 @@ Deno.serve(async (req) => {
     const mapped = MAP[rawStatus] ?? { shipment: rawStatus || 'unknown' };
 
     // Localizamos el envío por número de guía y, si no, por el id de Skydropx.
-    let shipment: { id: string; order_id: string } | null = null;
+    type Ship = {
+      id: string; order_id: string; status: string | null;
+      shipped_at: string | null; delivered_at: string | null;
+    };
+    const COLS = 'id, order_id, status, shipped_at, delivered_at';
+    let shipment: Ship | null = null;
     if (trackingNumber) {
       const { data } = await admin.from('shipments')
-        .select('id, order_id').eq('tracking_number', trackingNumber).maybeSingle();
-      shipment = data ?? null;
+        .select(COLS).eq('tracking_number', trackingNumber).maybeSingle();
+      shipment = (data as Ship) ?? null;
     }
     if (!shipment && shipmentId) {
       const { data } = await admin.from('shipments')
-        .select('id, order_id').eq('skydropx_shipment_id', shipmentId).maybeSingle();
-      shipment = data ?? null;
+        .select(COLS).eq('skydropx_shipment_id', shipmentId).maybeSingle();
+      shipment = (data as Ship) ?? null;
     }
 
     // 200 a propósito: si el envío no es nuestro, reintentar no lo va a arreglar
@@ -120,11 +125,25 @@ Deno.serve(async (req) => {
       return json({ ok: false, reason: 'envío no encontrado', tracking: trackingNumber });
     }
 
+    // Las paqueterías reenvían y desordenan eventos. El estado del envío solo
+    // avanza; un evento tardío se guarda en la línea de tiempo pero no lo
+    // regresa. Las excepciones sí se aplican siempre: son noticia, no retroceso.
+    const SHIP_RANK: Record<string, number> = {
+      pending: 0, created: 1, label_created: 2, picked_up: 3,
+      in_transit: 4, out_for_delivery: 5, delivery_attempt: 5, delivered: 6,
+    };
+    const ALWAYS = ['exception', 'cancelled', 'returned'];
+    const shipAdvances = ALWAYS.includes(mapped.shipment)
+      || (SHIP_RANK[mapped.shipment] ?? -1) > (SHIP_RANK[shipment.status ?? 'pending'] ?? -1);
+
     await admin.from('shipments').update({
-      status: mapped.shipment,
+      ...(shipAdvances ? { status: mapped.shipment } : {}),
       ...(trackingNumber ? { tracking_number: trackingNumber } : {}),
-      ...(mapped.shipment === 'delivered' ? { delivered_at: new Date().toISOString() } : {}),
-      ...(['in_transit', 'picked_up'].includes(mapped.shipment)
+      // Las marcas de tiempo se sellan una sola vez: guardan cuándo pasó de
+      // verdad, no cuándo llegó el último reenvío.
+      ...(mapped.shipment === 'delivered' && !shipment.delivered_at
+        ? { delivered_at: new Date().toISOString() } : {}),
+      ...(['in_transit', 'picked_up'].includes(mapped.shipment) && !shipment.shipped_at
         ? { shipped_at: new Date().toISOString() } : {}),
       updated_at: new Date().toISOString(),
     }).eq('id', shipment.id);
