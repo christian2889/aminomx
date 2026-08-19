@@ -141,7 +141,7 @@ async function openOrder(id) {
           <tr><td colspan="2" class="num">Subtotal</td><td class="num">${mxn(o.subtotal_cents)}</td></tr>
           ${o.discount_cents ? `<tr><td colspan="2" class="num">Descuento</td>
             <td class="num" style="color:hsl(var(--primary))">−${mxn(o.discount_cents)}</td></tr>` : ''}
-          <tr><td colspan="2" class="num">Envío refrigerado</td>
+          <tr><td colspan="2" class="num">Envío</td>
             <td class="num">${o.shipping_cents ? mxn(o.shipping_cents) : 'Gratis'}</td></tr>
           <tr><td colspan="2" class="num"><strong>Total</strong></td>
             <td class="num"><strong style="color:hsl(var(--primary))">${mxn(o.total_cents)}</strong></td></tr>

@@ -1,8 +1,8 @@
 # Aminos MX
 
 Sitio e-commerce de **Aminos MX** — péptidos liofilizados y aminoácidos de grado
-investigación en México. Pureza verificada **≥99%**, **COA** por lote y envío en
-**cadena de frío** a todo el país. Bilingüe **ES/EN**. *Research use only.*
+investigación en México. Pureza verificada **≥99%**, **COA** por lote y envíos a
+todo el país. Bilingüe **ES/EN**. *Research use only.*
 
 Rediseño con el lenguaje visual **Kimi** (oscuro + teal + glassmorphism) sobre la
 marca Aminos MX, combinando la funcionalidad del proyecto (bilingüe, carrito, COA,

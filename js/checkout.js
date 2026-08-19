@@ -159,14 +159,14 @@ function readCart() {
           <span class="help">Se valida al confirmar el pedido.</span>
         </div>
         <div class="sum-row"><span>Subtotal</span><b>${mxn(subtotal)}</b></div>
-        <div class="sum-row"><span>Envío refrigerado</span>
+        <div class="sum-row"><span>Envío</span>
           <b>${shipping === 0 ? 'Gratis' : mxn(shipping)}</b></div>
         <div class="sum-total"><span>Total estimado</span>
           <span style="color:hsl(var(--primary))">${mxn(subtotal + shipping)}</span></div>
         <button class="btn btn-primary btn-lg btn-block" id="placeOrder" style="margin-top:16px">
           Confirmar pedido</button>
         <p class="help" style="margin-top:12px;text-align:center">
-          ${icon('check')} Empaque en frío incluido · Uso exclusivo en investigación</p>
+          ${icon('check')} Empaque discreto y sin logotipos · Uso exclusivo en investigación</p>
       </div>
     </div>
   </div>`;

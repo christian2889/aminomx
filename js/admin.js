@@ -617,7 +617,7 @@ async function openOrder(id) {
    ENVÍOS
    ====================================================================== */
 async function viewEnvios() {
-  setView('Envíos', 'Guías, rastreo y cadena de frío');
+  setView('Envíos', 'Guías y rastreo');
   loading();
   try {
     const orders = (await fetchOrders({ limit: 200 }))

@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
       for (const it of order.order_items ?? []) {
         addLine(`${it.name}${it.presentation ? ` · ${it.presentation}` : ''}`, it.unit_price_cents, it.qty);
       }
-      if (order.shipping_cents > 0) addLine('Envío refrigerado', order.shipping_cents, 1);
+      if (order.shipping_cents > 0) addLine('Envío', order.shipping_cents, 1);
     }
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {

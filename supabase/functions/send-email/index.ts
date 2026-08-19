@@ -62,7 +62,7 @@ const TEMPLATES: Record<string, (o: any) => { subject: string; html: string }> =
     subject: `Tu pedido ${o.order_number} va en camino · Aminos MX`,
     html: layout('Tu pedido va en camino 🚚', `
       <p style="color:#c9d7de;line-height:1.7">Tu pedido <strong style="color:#14d3c4">${o.order_number}</strong>
-      salió en cadena de frío (2–8 °C).</p>
+      ya salió de nuestro almacén.</p>
       ${o.shipment?.tracking_number ? `<p style="color:#c9d7de">Paquetería: <strong>${o.shipment.carrier ?? ''}</strong><br>
         Guía: <strong>${o.shipment.tracking_number}</strong></p>
         ${o.shipment.tracking_url ? `<p><a href="${o.shipment.tracking_url}" style="display:inline-block;background:#14d3c4;color:#04121a;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:700">Rastrear envío</a></p>` : ''}` : ''}`),

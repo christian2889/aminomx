@@ -397,9 +397,9 @@
     if (bar) bar.style.width = Math.min(100, (sub / FREE_SHIPPING) * 100) + "%";
     if (msg) {
       var missing = Math.max(0, FREE_SHIPPING - sub);
-      msg.innerHTML = icon("i-snowflake") + (missing > 0
+      msg.innerHTML = icon("i-truck") + (missing > 0
         ? T("Te faltan <b>" + fmt(missing) + "</b> para envío gratis", "You're <b>" + fmt(missing) + "</b> away from free shipping")
-        : "<b>" + T("¡Tienes envío refrigerado gratis!", "You have free refrigerated shipping!") + "</b>");
+        : "<b>" + T("¡Tienes envío gratis!", "You have free shipping!") + "</b>");
     }
 
     var box = $("[data-drawer-items]");
