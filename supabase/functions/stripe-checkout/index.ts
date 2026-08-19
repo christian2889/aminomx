@@ -61,6 +61,18 @@ Deno.serve(async (req) => {
       return json({ error: 'Este pedido está cancelado' }, 409);
     }
 
+    // Si a este pedido ya se le devolvió el inventario (ficha OXXO vencida,
+    // pago rechazado) hay que volver a apartarlo ANTES de cobrar. Si mientras
+    // tanto se agotó, mejor enterarnos aquí que después de cobrarle.
+    if (order.stock_restored_at) {
+      const { error: reserveErr } = await admin.rpc('reserve_order_stock', {
+        p_order_id: order.id,
+      });
+      if (reserveErr) {
+        return json({ error: reserveErr.message ?? 'Ya no hay inventario para este pedido' }, 409);
+      }
+    }
+
     // Construir la sesión con montos de la base
     const p = new URLSearchParams();
     p.set('mode', 'payment');

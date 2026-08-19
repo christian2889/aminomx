@@ -282,7 +282,7 @@
       "</button>" +
       '<div class="pcard-body">' +
         '<p class="pcard-kicker">' + esc(catLabel(p.category)) + " · " + esc(T(p.presEs, p.presEn)) + "</p>" +
-        '<a class="pcard-name" href="producto.html?p=' + encodeURIComponent(p.id) + '">' + esc(p.name) + "</a>" +
+        '<a class="pcard-name" href="/producto?p=' + encodeURIComponent(p.id) + '">' + esc(p.name) + "</a>" +
         '<div class="pcard-tags">' + tags + "</div>" +
         '<div class="pcard-foot">' +
           '<div class="pcard-price">' + (p.compareAt ? '<div class="compare">' + fmt(p.compareAt) + "</div>" : "") +
@@ -317,7 +317,7 @@
     $("[data-modal-compare]").textContent = p.compareAt ? fmt(p.compareAt) : "";
     $("[data-modal-add]").setAttribute("data-add-modal", p.id);
     var ficha = $(".modal-ficha");
-    if (ficha) ficha.href = "producto.html?p=" + encodeURIComponent(p.id);
+    if (ficha) ficha.href = "/producto?p=" + encodeURIComponent(p.id);
     modal.classList.add("show"); modal.setAttribute("aria-hidden", "false");
   }
   function closeModal() { if (modal) { modal.classList.remove("show"); modal.setAttribute("aria-hidden", "true"); } }

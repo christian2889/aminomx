@@ -31,7 +31,7 @@ function readCart() {
   if (!cart.length) {
     body.innerHTML = `<div class="panel"><div class="panel-body">
       <div class="empty">${icon('box')}<p>Tu carrito está vacío.</p>
-        <a class="btn btn-primary" style="margin-top:14px" href="index.html#catalogo">Ver catálogo</a>
+        <a class="btn btn-primary" style="margin-top:14px" href="/#catalogo">Ver catálogo</a>
       </div></div></div>`;
     return;
   }
@@ -41,7 +41,7 @@ function readCart() {
   if (!session) {
     body.innerHTML = `<div class="panel"><div class="panel-body"><div class="empty">
       ${icon('users')}<p>Inicia sesión o crea tu cuenta para completar el pedido<br>y poder seguir tu envío.</p>
-      <a class="btn btn-primary" style="margin-top:14px" href="login.html?next=checkout.html">Entrar / crear cuenta</a>
+      <a class="btn btn-primary" style="margin-top:14px" href="/login?next=%2Fcheckout">Entrar / crear cuenta</a>
     </div></div></div>`;
     return;
   }
@@ -250,13 +250,13 @@ function readCart() {
           // El pedido ya existe: el cliente puede pagarlo desde su cuenta
           toast(`Pedido ${result.order_number} creado. ${err.message}. Puedes pagarlo desde tu cuenta.`, 'err');
           setTimeout(() => {
-            location.href = `cuenta.html?pedido=${encodeURIComponent(result.order_number)}#pedidos`;
+            location.href = `/cuenta?pedido=${encodeURIComponent(result.order_number)}#pedidos`;
           }, 3200);
           return;
         }
       }
 
-      location.href = `cuenta.html?pedido=${encodeURIComponent(result.order_number)}#pedidos`;
+      location.href = `/cuenta?pedido=${encodeURIComponent(result.order_number)}#pedidos`;
     } catch (e) {
       console.error(e);
       toast(e?.message ?? 'No pudimos crear el pedido', 'err');

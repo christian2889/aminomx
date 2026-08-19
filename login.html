@@ -21,7 +21,7 @@
   <div class="glow-blob" style="position:absolute;top:-140px;left:50%;width:760px;height:460px;transform:translateX(-50%);border-radius:50%;opacity:.22;filter:blur(64px);background:radial-gradient(ellipse at center, hsl(174 84% 45% / .55) 0%, hsl(199 89% 48% / .25) 45%, transparent 70%)"></div>
 
   <div class="auth-card">
-    <a class="brand" href="index.html" style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px">
+    <a class="brand" href="/" style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px">
       <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
       <span class="brand-name">Aminos<span class="mx">MX</span></span>
     </a>
@@ -55,8 +55,11 @@
     <div class="auth-alt">
       <a href="#" id="magicLink">Prefiero recibir un enlace por correo</a>
     </div>
+    <div class="auth-alt" id="forgotWrap" style="margin-top:10px">
+      <a href="#" id="forgotLink">Olvidé mi contraseña</a>
+    </div>
     <div class="auth-alt" style="margin-top:10px">
-      <a href="index.html">← Volver a la tienda</a> · <a href="seguimiento.html">Rastrear pedido sin cuenta</a>
+      <a href="/">← Volver a la tienda</a> · <a href="/seguimiento">Rastrear pedido sin cuenta</a>
     </div>
   </div>
 </div>
@@ -68,7 +71,11 @@
 
   const $ = (s) => document.querySelector(s);
   const form = $('#authForm'), msg = $('#authMsg'), btn = $('#submitBtn');
-  const next = new URLSearchParams(location.search).get('next') || 'cuenta.html';
+  // `next` viene de la URL: solo aceptamos rutas internas. Sin este filtro,
+  // ?next=https://sitio-falso.mx mandaría al cliente recién autenticado a un
+  // dominio ajeno (redirect abierto). `//host` también es absoluta.
+  const rawNext = new URLSearchParams(location.search).get('next') || '';
+  const next = /^\/(?!\/)/.test(rawNext) ? rawNext : '/cuenta';
   let mode = 'signin';
 
   // Si ya hay sesión, entrar directo
@@ -103,7 +110,7 @@
         const { error } = await supabase.auth.signUp({
           email, password,
           options: { data: { full_name: $('#fullName').value.trim() },
-                     emailRedirectTo: location.origin + '/' + next },
+                     emailRedirectTo: location.origin + next },
         });
         if (error) throw error;
         show('¡Listo! Revisa tu correo para confirmar la cuenta.', true);
@@ -126,9 +133,27 @@
     const email = $('#email').value.trim();
     if (!email) return show('Escribe tu correo primero.');
     const { error } = await supabase.auth.signInWithOtp({
-      email, options: { emailRedirectTo: location.origin + '/' + next },
+      email, options: { emailRedirectTo: location.origin + next },
     });
     show(error ? error.message : 'Te enviamos un enlace de acceso a tu correo.', !error);
+  });
+
+  // Recuperar contraseña. Respondemos igual exista o no la cuenta para no
+  // revelar qué correos están registrados.
+  $('#forgotLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = $('#email').value.trim();
+    if (!email) return show('Escribe tu correo primero y vuelve a dar clic.');
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: location.origin + '/nueva-contrasena',
+    });
+    show('Si ese correo tiene cuenta, te enviamos un enlace para crear una contraseña nueva.', true);
+  });
+
+  // El enlace de recuperación abre login.html con la sesión ya iniciada en
+  // modo "recovery"; lo mandamos directo a elegir contraseña.
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') location.replace('/nueva-contrasena');
   });
 </script>
 </body>

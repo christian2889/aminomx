@@ -108,6 +108,9 @@ Deno.serve(async (req) => {
             order_id: orderId, status: 'pending',
             note: 'El pago OXXO no se completó; puedes intentar de nuevo',
           });
+          // El stock se descontó al crear el pedido: hay que devolverlo o el
+          // catálogo acaba marcando "agotado" con producto en bodega.
+          await admin.rpc('restore_order_stock', { p_order_id: orderId });
         }
         break;
       case 'checkout.session.expired':
@@ -117,6 +120,7 @@ Deno.serve(async (req) => {
             note: 'La sesión de pago expiró; puedes intentar de nuevo',
             visible_to_customer: false,
           });
+          await admin.rpc('restore_order_stock', { p_order_id: orderId });
         }
         break;
     }

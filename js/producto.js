@@ -33,7 +33,7 @@ function notFound() {
       <h1 style="font-size:1.6rem;font-weight:800">${T('Producto no encontrado', 'Product not found')}</h1>
       <p style="margin-top:12px;color:hsl(var(--muted-fg))">
         ${T('Es posible que ya no esté disponible.', 'It may no longer be available.')}</p>
-      <a class="btn btn-primary" style="margin-top:20px" href="index.html#catalogo">
+      <a class="btn btn-primary" style="margin-top:20px" href="/#catalogo">
         ${T('Ver catálogo', 'View catalog')}</a>
     </div>`;
 }
@@ -45,7 +45,7 @@ function setSEO(p, cat) {
   $('[data-seo-desc]')?.setAttribute('content', desc.slice(0, 160));
   $('[data-seo-ogtitle]')?.setAttribute('content', title);
   $('[data-seo-ogdesc]')?.setAttribute('content', desc.slice(0, 200));
-  const url = `${location.origin}/producto.html?p=${p.slug}`;
+  const url = `${location.origin}/producto?p=${p.slug}`;
   $('[data-seo-canonical]')?.setAttribute('href', url);
 
   const img = p.images?.[0]?.url;
@@ -123,7 +123,7 @@ async function renderRelated(p) {
   if (!list.length) { box.closest('section')?.remove(); return; }
   box.innerHTML = list.map((r) => {
     const img = (r.product_images ?? []).sort((a, b) => a.position - b.position)[0]?.url;
-    return `<a class="mini" href="producto.html?p=${encodeURIComponent(r.slug)}">
+    return `<a class="mini" href="/producto?p=${encodeURIComponent(r.slug)}">
       <div class="m-thumb">${img
         ? `<img src="${esc(img)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`
         : '🧪'}</div>

@@ -291,7 +291,7 @@ function go(view) {
   // Si es staff, ofrecer atajo al panel
   if (['admin', 'staff'].includes(PROFILE?.role)) {
     const link = document.createElement('a');
-    link.className = 'side-link'; link.href = 'admin.html';
+    link.className = 'side-link'; link.href = '/admin';
     link.innerHTML = `${icon('gauge')} Panel admin`;
     $('.side-foot').prepend(link);
   }
@@ -326,7 +326,7 @@ function go(view) {
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('amx_theme', next);
   });
-  $('#logoutBtn').addEventListener('click', async () => { await signOut(); location.href = 'index.html'; });
+  $('#logoutBtn').addEventListener('click', async () => { await signOut(); location.href = '/'; });
 
   go((location.hash || '#pedidos').slice(1));
 })();

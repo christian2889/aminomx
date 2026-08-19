@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nueva contraseña · Aminos MX</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0a0f16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<script>try{var t=localStorage.getItem('amx_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}</script>
+<script src="js/config.js"></script>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="molecule-bg" style="position:absolute;inset:0;opacity:.5"></div>
+  <div class="glow-blob" style="position:absolute;top:-140px;left:50%;width:760px;height:460px;transform:translateX(-50%);border-radius:50%;opacity:.22;filter:blur(64px);background:radial-gradient(ellipse at center, hsl(174 84% 45% / .55) 0%, hsl(199 89% 48% / .25) 45%, transparent 70%)"></div>
+
+  <div class="auth-card">
+    <a class="brand" href="/" style="display:inline-flex;align-items:center;gap:10px;margin-bottom:18px">
+      <span class="brand-mark"><svg class="ico"><use href="#i-dna"/></svg></span>
+      <span class="brand-name">Aminos<span class="mx">MX</span></span>
+    </a>
+
+    <h1>Elige una contraseña nueva</h1>
+    <p class="lead" id="lead">Escribe la contraseña con la que entrarás de ahora en adelante.</p>
+
+    <form class="auth-form" id="pwForm" novalidate>
+      <div class="field">
+        <label for="pw1">Contraseña nueva</label>
+        <input class="input" type="password" id="pw1" required autocomplete="new-password"
+               placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="field">
+        <label for="pw2">Repite la contraseña</label>
+        <input class="input" type="password" id="pw2" required autocomplete="new-password"
+               placeholder="La misma de arriba">
+      </div>
+      <div id="msg" role="status" aria-live="polite"></div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="saveBtn">Guardar contraseña</button>
+    </form>
+
+    <div class="auth-alt" style="margin-top:14px">
+      <a href="/login">← Volver a iniciar sesión</a>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from './js/db.js';
+  import { injectIcons } from './js/icons.js';
+  injectIcons();
+
+  const $ = (s) => document.querySelector(s);
+  const form = $('#pwForm'), msg = $('#msg'), btn = $('#saveBtn');
+  const show = (text, ok = false) => {
+    msg.innerHTML = `<p class="${ok ? 'ok-text' : 'error-text'}">${text}</p>`;
+  };
+
+  // El enlace del correo trae el token en el fragmento; el cliente de Supabase
+  // lo canjea solo. Si no hay sesión, el enlace venció o ya se usó.
+  let listo = false;
+  const revisar = async () => {
+    const { data } = await supabase.auth.getSession();
+    listo = Boolean(data.session);
+    if (!listo) {
+      $('#lead').textContent = 'Este enlace ya venció o se usó antes.';
+      show('Pide uno nuevo desde "Olvidé mi contraseña" en la pantalla de acceso.');
+      btn.disabled = true;
+    }
+  };
+  supabase.auth.onAuthStateChange(() => { if (!listo) revisar(); });
+  setTimeout(revisar, 600);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pw1 = $('#pw1').value, pw2 = $('#pw2').value;
+    if (pw1.length < 8) return show('La contraseña necesita al menos 8 caracteres.');
+    if (pw1 !== pw2) return show('Las dos contraseñas no coinciden.');
+
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const { error } = await supabase.auth.updateUser({ password: pw1 });
+      if (error) throw error;
+      show('Contraseña actualizada. Entrando a tu cuenta…', true);
+      setTimeout(() => location.replace('/cuenta'), 1200);
+    } catch (err) {
+      show(err?.message ?? 'No pudimos actualizar la contraseña.');
+      btn.disabled = false; btn.textContent = 'Guardar contraseña';
+    }
+  });
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import {
   requireStaff, signOut, fetchCategories, fetchProducts, upsertProduct, deleteProduct,
   uploadProductImage, deleteProductImage, fetchOrders, fetchOrder, updateOrder,
   upsertShipment, fetchCustomers, updateProfile, fetchBatches, upsertBatch,
-  uploadCOA, fetchStats, sendOrderEmail,
+  uploadCOA, fetchStats, sendOrderEmail, restoreOrderStock,
 } from './db.js';
 import { injectIcons, icon } from './icons.js';
 
@@ -494,7 +494,24 @@ async function openOrder(id) {
         const patch = { payment_status: $('#oPay').value, admin_notes: $('#oNotes').value.trim() || null };
         if ($('#invStatus')) patch.invoice_status = $('#invStatus').value;
         if (status !== o.status) patch.status = status;
+
+        // Cancelar un pedido no pagado devuelve su inventario al catálogo:
+        // si no, esas piezas quedan "vendidas" para siempre.
+        const cancelando = status === 'cancelled' && o.status !== 'cancelled';
+        if (cancelando && o.payment_status !== 'paid'
+            && !confirm('Se cancelará el pedido y su inventario volverá al catálogo. ¿Continuar?')) {
+          return;
+        }
+
         await updateOrder(o.id, patch);
+
+        if (cancelando && o.payment_status !== 'paid') {
+          try {
+            await restoreOrderStock(o.id);
+          } catch (e) {
+            toast('Pedido cancelado, pero el inventario no se devolvió: ' + (e.message ?? ''), 'err');
+          }
+        }
         const carrier = $('#shCarrier').value.trim(), tracking = $('#shTracking').value.trim();
         if (carrier || tracking) {
           await upsertShipment(o.id, {
@@ -969,7 +986,7 @@ function go(view) {
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('amx_theme', next);
   });
-  $('#logoutBtn').addEventListener('click', async () => { await signOut(); location.href = 'login.html'; });
+  $('#logoutBtn').addEventListener('click', async () => { await signOut(); location.href = '/login'; });
 
   go((location.hash || '#resumen').slice(1));
 })();

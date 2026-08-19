@@ -45,7 +45,7 @@ export async function getProfile() {
   return data ?? { id: session.user.id, email: session.user.email, role: 'customer' };
 }
 
-export async function requireAuth(redirect = 'login.html') {
+export async function requireAuth(redirect = '/login') {
   const session = await getSession();
   if (!session) { location.href = `${redirect}?next=${encodeURIComponent(location.pathname)}`; return null; }
   return session;
@@ -62,11 +62,11 @@ export async function requireStaff() {
         <p class="lead">Tu cuenta (${profile?.email ?? ''}) no tiene permisos de administrador.
         Pide a un administrador que cambie tu rol a <strong>staff</strong> o <strong>admin</strong>.</p>
         <div class="auth-form">
-          <a class="btn btn-outline" href="cuenta.html">Ir a mi cuenta</a>
+          <a class="btn btn-outline" href="/cuenta">Ir a mi cuenta</a>
           <button class="btn btn-ghost" id="logoutBtn">Cerrar sesión</button>
         </div></div></div>`;
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
-      await supabase.auth.signOut(); location.href = 'login.html';
+      await supabase.auth.signOut(); location.href = '/login';
     });
     return null;
   }
@@ -167,6 +167,14 @@ export async function updateOrder(id, patch, eventNote = null) {
       order_id: id, status: patch.status, note: eventNote ?? null,
     });
   }
+}
+
+/** Devuelve al catálogo el inventario de un pedido que no se va a cobrar.
+ *  Idempotente en el servidor: llamarla dos veces no duplica el stock. */
+export async function restoreOrderStock(orderId) {
+  const { data, error } = await supabase.rpc('restore_order_stock', { p_order_id: orderId });
+  if (error) throw error;
+  return data === true;
 }
 
 export async function createOrder({ items, email, name, phone, address, coupon, notes }) {
