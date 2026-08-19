@@ -79,8 +79,8 @@ Deno.serve(async (req) => {
     p.set('client_reference_id', order.id);
     p.set('customer_email', order.email);
     p.set('locale', 'es-419');
-    p.set('success_url', success_url ?? `${SITE_URL}/cuenta.html?pago=exito&pedido=${order.order_number}`);
-    p.set('cancel_url', cancel_url ?? `${SITE_URL}/cuenta.html?pago=cancelado&pedido=${order.order_number}`);
+    p.set('success_url', success_url ?? `${SITE_URL}/cuenta?pago=exito&pedido=${order.order_number}`);
+    p.set('cancel_url', cancel_url ?? `${SITE_URL}/cuenta?pago=cancelado&pedido=${order.order_number}`);
     p.set('metadata[order_id]', order.id);
     p.set('metadata[order_number]', order.order_number);
     p.set('payment_intent_data[metadata][order_id]', order.id);
