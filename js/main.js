@@ -304,7 +304,7 @@
             '<div class="amt">' + (soon ? T("Por anunciar", "TBA") : fmt(p.price)) + "</div></div>" +
           (soon
             ? '<button class="btn btn-outline btn-sm" disabled aria-disabled="true">' +
-                icon("i-timer") + T("No disponible", "Unavailable") + "</button>"
+                icon("i-timer") + T("Pronto", "Soon") + "</button>"
             : '<button class="btn btn-primary btn-sm" data-add="' + p.id + '">' +
                 icon("i-cart") + T("Agregar", "Add") + "</button>") +
         "</div>" + stock +
