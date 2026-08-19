@@ -57,6 +57,12 @@ Vercel (sitio estático)                Supabase (proyecto: aminomx)
 
 ## Integración Stripe (pagos en línea)
 
+> **¿Vercel o Supabase?** Todas las llaves secretas van en **Supabase →
+> Project Settings → Edge Functions → Secrets**. En Vercel no se configura
+> ninguna variable de entorno. Guía completa con la tabla de todos los
+> secretos: **[INTEGRACIONES.md](INTEGRACIONES.md)**.
+
+
 Funciones desplegadas: `stripe-checkout` (crea la sesión de pago) y
 `stripe-webhook` (confirma el pago con firma verificada).
 Acepta **tarjeta** (Visa/Mastercard/AMEX) y **OXXO** (hasta $10,000 MXN),

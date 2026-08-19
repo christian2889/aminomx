@@ -70,7 +70,9 @@ El sitio ahora es una plataforma completa conectada a **Supabase**
 - **Integraciones listas**: Stripe (pagos), Resend (correos) y Skydropx
   (envíos) como Edge Functions desplegadas; solo requieren sus API keys.
 
-Detalles de operación e integración: **[PLATAFORMA.md](PLATAFORMA.md)**.
+Detalles de operación: **[PLATAFORMA.md](PLATAFORMA.md)**.
+Dónde va cada API key (spoiler: en Supabase, no en Vercel):
+**[INTEGRACIONES.md](INTEGRACIONES.md)**.
 
 ## Desarrollo
 
