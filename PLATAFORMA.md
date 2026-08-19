@@ -109,15 +109,23 @@ Para activarla:
 Funciones desplegadas: `skydropx-rates` (cotiza/crea envío desde el panel)
 y `skydropx-webhook` (recibe estados y avanza el pedido + correo automático).
 
-1. Consigue tu API key en skydropx.com.
-2. Secrets: `SKYDROPX_API_KEY`, `SKYDROPX_WEBHOOK_SECRET` (inventa uno),
-   y opcionales `ORIGIN_STREET`, `ORIGIN_CITY`, `ORIGIN_STATE`, `ORIGIN_ZIP`,
-   `ORIGIN_PHONE`, `ORIGIN_EMAIL` (dirección de origen del envío).
+Usa la **API v2 de Skydropx PRO** (OAuth2 `client_credentials`).
+
+1. pro.skydropx.com → **Conexiones → API → Credenciales de aplicación**.
+2. Secrets: `SKYDROPX_CLIENT_ID` (Clave de cliente / API Key),
+   `SKYDROPX_CLIENT_SECRET` (Clave secreta del cliente),
+   `SKYDROPX_WEBHOOK_SECRET` (inventa uno), y la dirección de origen
+   `ORIGIN_STREET`, `ORIGIN_CITY`, `ORIGIN_STATE`, `ORIGIN_NEIGHBORHOOD`,
+   `ORIGIN_ZIP`, `ORIGIN_PHONE`, `ORIGIN_EMAIL`.
 3. En Skydropx registra el webhook:
    `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/skydropx-webhook`
    con el header `x-skydropx-signature: <SKYDROPX_WEBHOOK_SECRET>`.
 4. Mapa de estados: `in_transit → shipped`, `delivered → delivered`
    (con correo automático al cliente en ambos).
+
+Desde el panel: **Pedido → Envío → Cotizar Skydropx** lista las tarifas
+ordenadas por precio y **Generar guía** crea la guía con la que elijas,
+llenando paquetería, número de guía, rastreo y PDF de la etiqueta.
 
 > Ambas integraciones están **fail-safe**: sin secretos configurados el
 > sistema opera manualmente (guías a mano en el panel, sin correos).

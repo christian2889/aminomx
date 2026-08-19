@@ -452,6 +452,10 @@ async function openOrder(id) {
             <div class="field span-2"><label>URL de rastreo</label>
               <input class="input" id="shUrl" value="${esc(ship?.tracking_url ?? '')}" placeholder="https://…"></div>
           </div>
+          ${ship?.label_url ? `<p class="help" style="margin-top:12px">
+            <a class="btn btn-outline btn-sm" href="${esc(ship.label_url)}" target="_blank" rel="noopener">
+              ${icon('external')} Descargar guía</a></p>` : ''}
+          <div id="ratesBox"></div>
           ${ship?.shipment_events?.length ? `<ul class="timeline" style="margin-top:16px">${
             ship.shipment_events.map((ev) => `<li class="done"><div class="t-title">${esc(ev.status)}</div>
               <div class="t-meta">${esc(ev.description ?? '')} · ${fechaHoraMX(ev.occurred_at)}</div></li>`).join('')}</ul>` : ''}
@@ -524,14 +528,60 @@ async function openOrder(id) {
     });
 
     $('#quoteBtn').addEventListener('click', async () => {
+      const box = $('#ratesBox');
+      const btn = $('#quoteBtn');
+      btn.disabled = true;
+      box.innerHTML = '<p class="help" style="margin-top:12px">Cotizando con las paqueterías…</p>';
       try {
         const { data, error } = await supabase.functions.invoke('skydropx-rates', {
-          body: { order_id: o.id, to: { ...addr, email: o.email } },
+          body: { action: 'quote', order_id: o.id, to: { ...addr, email: o.email, phone: o.phone } },
         });
         if (error) throw error;
-        toast(data?.rates?.length ? `${data.rates.length} tarifas recibidas` : 'Skydropx aún no está configurado',
-          data?.rates?.length ? 'ok' : 'err');
-      } catch (e) { toast('Skydropx aún no está configurado', 'err'); }
+        if (data?.error) throw new Error(data.error);
+
+        const rates = data?.rates ?? [];
+        if (!rates.length) { box.innerHTML = '<p class="help" style="margin-top:12px">Sin tarifas para este destino.</p>'; return; }
+
+        box.innerHTML = `<div class="table-wrap" style="margin-top:14px"><table class="data" style="min-width:auto">
+          <tbody>${rates.map((r) => `<tr>
+            <td><div class="cell-main">${esc(r.provider ?? '')}</div>
+                <div class="cell-sub">${esc(r.service ?? '')}${r.days ? ` · ${esc(String(r.days))} día(s)` : ''}</div></td>
+            <td class="num"><strong>${mxn(r.cost_cents)}</strong></td>
+            <td class="num"><button class="btn btn-outline btn-sm" data-rate="${esc(String(r.id))}"
+              data-carrier="${esc(r.provider ?? '')}">Generar guía</button></td></tr>`).join('')}
+          </tbody></table></div>`;
+
+        box.onclick = async (ev) => {
+          const b = ev.target.closest('[data-rate]');
+          if (!b) return;
+          b.disabled = true; b.textContent = 'Generando…';
+          try {
+            const res = await supabase.functions.invoke('skydropx-rates', {
+              body: {
+                action: 'label', order_id: o.id, quotation_id: data.quotation_id,
+                rate_id: b.dataset.rate, to: { ...addr, email: o.email, phone: o.phone },
+              },
+            });
+            if (res.error) throw res.error;
+            if (res.data?.error) throw new Error(res.data.error);
+            $('#shCarrier').value = b.dataset.carrier;
+            $('#shTracking').value = res.data?.tracking_number ?? '';
+            $('#shUrl').value = res.data?.tracking_url ?? '';
+            toast('Guía generada · guarda los cambios para confirmar');
+            box.innerHTML = res.data?.label_url
+              ? `<p class="help" style="margin-top:12px"><a class="btn btn-outline btn-sm"
+                   href="${esc(res.data.label_url)}" target="_blank" rel="noopener">
+                   ${icon('external')} Descargar guía</a></p>` : '';
+          } catch (err) {
+            b.disabled = false; b.textContent = 'Generar guía';
+            toast(err.message ?? 'No se pudo generar la guía', 'err');
+          }
+        };
+      } catch (e) {
+        box.innerHTML = '';
+        toast(e.message?.includes('SKYDROPX') ? 'Skydropx aún no está configurado'
+                                              : (e.message ?? 'No se pudo cotizar'), 'err');
+      } finally { btn.disabled = false; }
     });
   } catch (e) { fail(e); }
 }

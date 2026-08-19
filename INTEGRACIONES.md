@@ -67,20 +67,30 @@ lo toman en la siguiente invocación.
 | `RESEND_API_KEY` | `re_…` | `send-email` |
 | `FROM_EMAIL` | `Aminos MX <pedidos@tudominio.com>` | `send-email` |
 
-### Envíos (Skydropx)
+### Envíos (Skydropx PRO — API v2)
 
-| Secret | Valor | Lo usa |
+En Skydropx PRO ve a **Conexiones → API → Credenciales de aplicación**.
+Te da **dos** valores porque la API v2 usa OAuth2:
+
+| Secret | Valor en el panel de Skydropx | Lo usa |
 |---|---|---|
-| `SKYDROPX_API_KEY` | tu API key de Skydropx | `skydropx-rates` |
-| `SKYDROPX_API_URL` | `https://api.skydropx.com/v1` (default) | `skydropx-rates` |
+| `SKYDROPX_CLIENT_ID` | **Clave de cliente (API Key)** | `skydropx-rates` |
+| `SKYDROPX_CLIENT_SECRET` | **Clave secreta del cliente (API Secret key)** | `skydropx-rates` |
+| `SKYDROPX_API_URL` | `https://pro.skydropx.com/api/v1` (default) · sandbox: `https://sb-pro.skydropx.com/api/v1` | `skydropx-rates` |
 | `SKYDROPX_WEBHOOK_SECRET` | invéntalo tú (cadena larga y aleatoria) | `skydropx-webhook` |
 | `ORIGIN_NAME` | `Aminos MX` | dirección de origen |
 | `ORIGIN_STREET` | calle y número de tu bodega | dirección de origen |
-| `ORIGIN_CITY` | p. ej. `Tijuana` | dirección de origen |
-| `ORIGIN_STATE` | p. ej. `Baja California` | dirección de origen |
+| `ORIGIN_CITY` | municipio/alcaldía, p. ej. `Tijuana` | dirección de origen |
+| `ORIGIN_STATE` | estado, p. ej. `Baja California` | dirección de origen |
+| `ORIGIN_NEIGHBORHOOD` | colonia (opcional pero recomendado) | dirección de origen |
 | `ORIGIN_ZIP` | p. ej. `22000` | dirección de origen |
 | `ORIGIN_PHONE` | teléfono de contacto del remitente | dirección de origen |
 | `ORIGIN_EMAIL` | `envios@tudominio.com` | dirección de origen |
+| `ORIGIN_REFERENCE` | referencia de ubicación (opcional) | dirección de origen |
+
+> La función pide el token OAuth sola (`grant_type: client_credentials`),
+> lo cachea las 2 h que dura y lo renueva antes de vencer. Tú solo capturas
+> el `client_id` y el `client_secret`.
 
 ### NO los configures tú
 
@@ -128,19 +138,37 @@ dashboard te lo rechaza.
 Sin `RESEND_API_KEY` la función responde `skipped` y lo anota en la tabla
 `email_log`: no rompe el checkout, simplemente no manda correos.
 
-### 3. Skydropx
+### 3. Skydropx PRO
 
-1. Consigue tu API key en [skydropx.com](https://skydropx.com).
-2. Guarda `SKYDROPX_API_KEY` y los `ORIGIN_*` de tu dirección de bodega.
-3. Inventa un `SKYDROPX_WEBHOOK_SECRET` (cadena larga aleatoria) y guárdalo.
-4. En Skydropx registra el webhook:
+1. Entra a [pro.skydropx.com](https://pro.skydropx.com) → **Conexiones → API**
+   → botón `…` de tu aplicación → **Credenciales de aplicación**.
+2. Copia los dos valores a Supabase:
+   - *Clave de cliente (API Key)* → `SKYDROPX_CLIENT_ID`
+   - *Clave secreta del cliente (API Secret key)* → `SKYDROPX_CLIENT_SECRET`
+3. Guarda los `ORIGIN_*` de tu dirección de bodega (sin ellos la cotización
+   sale mal: Skydropx no sabe desde dónde sale el paquete).
+4. Inventa un `SKYDROPX_WEBHOOK_SECRET` (cadena larga aleatoria) y guárdalo.
+5. En Skydropx → **Webhooks** registra:
    - URL: `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/skydropx-webhook`
    - Header: `x-skydropx-signature: <el mismo SKYDROPX_WEBHOOK_SECRET>`
-5. Estados: `in_transit → shipped`, `delivered → delivered`, con correo
+6. Estados: `in_transit → shipped`, `delivered → delivered`, con correo
    automático al cliente en ambos.
 
-Sin la API key, el panel sigue funcionando en **modo manual**: capturas la
-paquetería y el número de guía a mano y el cliente los ve igual.
+**Cómo se usa desde el panel:** Admin → abre un pedido → *Envío* →
+**Cotizar Skydropx**. Aparece la tabla de tarifas ordenada de más barata a
+más cara; el botón **Generar guía** de la fila que elijas crea la guía,
+llena paquetería / número de guía / URL de rastreo, y deja el PDF
+descargable. Después das **Guardar cambios**.
+
+> Las cotizaciones de Skydropx PRO son asíncronas: la función sondea hasta
+> que `is_completed` llega en true, así que el botón tarda unos segundos.
+
+Sin las credenciales, el panel sigue funcionando en **modo manual**:
+capturas la paquetería y el número de guía a mano y el cliente los ve igual.
+
+**Si rotas las credenciales** (recomendado si alguna vez las compartiste en
+una captura o chat): Skydropx → API → regenera la aplicación y actualiza los
+dos secrets en Supabase. No hace falta redesplegar la función.
 
 ---
 
@@ -167,5 +195,6 @@ Si cambias el dominio (`aminomx.vercel.app` → `aminosmx.com`), actualiza
 | Stripe webhook | Stripe → Webhooks → *Recent deliveries* | `200 OK` en los 4 eventos |
 | Pago aplicado | Admin → Pedidos | Estado de pago = **pagado** |
 | Resend | Admin → Pedido → "Enviar correo" | Llega el correo; `email_log` sin error |
-| Skydropx | Admin → Pedido → "Cotizar envío" | Devuelve tarifas reales |
+| Skydropx | Admin → Pedido → "Cotizar Skydropx" | Tabla con tarifas reales |
+| Guía Skydropx | Botón "Generar guía" de una tarifa | Guía + PDF descargable |
 | Logs de error | Supabase → Edge Functions → función → Logs | Sin `500` |
