@@ -71,7 +71,7 @@ cobrando en **MXN**.
 1. Crea tu cuenta en stripe.com y activa **México** como país de la cuenta.
 2. Supabase → **Edge Functions → Secrets**:
    - `STRIPE_SECRET_KEY` = `sk_live_…` (o `sk_test_…` para pruebas)
-   - `SITE_URL` = `https://aminomx.vercel.app` (a dónde vuelve el cliente)
+   - `SITE_URL` = `https://www.aminosmx.com` (a dónde vuelve el cliente)
 3. En Stripe → **Developers → Webhooks**, agrega el endpoint:
    `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/stripe-webhook`
    con los eventos:

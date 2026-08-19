@@ -19,7 +19,7 @@ const json = (body: unknown, status = 200) =>
   });
 
 const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
-const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://aminomx.vercel.app').replace(/\/$/, '');
+const SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://www.aminosmx.com').replace(/\/$/, '');
 const OXXO_MAX_CENTS = 1000000; // límite OXXO: $10,000 MXN
 
 const admin = createClient(

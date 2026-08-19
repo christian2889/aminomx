@@ -53,8 +53,8 @@ lo toman en la siguiente invocación.
 |---|---|---|
 | `STRIPE_SECRET_KEY` | `sk_test_…` para probar, `sk_live_…` en producción | `stripe-checkout` |
 | `STRIPE_WEBHOOK_SECRET` | `whsec_…` (te lo da Stripe al crear el webhook) | `stripe-webhook` |
-| `SITE_URL` | `https://aminomx.vercel.app` (sin `/` final) | `stripe-checkout` — a dónde regresa el cliente |
-| `ALLOWED_ORIGIN` | `https://aminomx.vercel.app` | CORS de todas las funciones |
+| `SITE_URL` | `https://www.aminosmx.com` (sin `/` final) | `stripe-checkout` — a dónde regresa el cliente |
+| `ALLOWED_ORIGIN` | `https://www.aminosmx.com` | CORS de todas las funciones |
 
 > `ALLOWED_ORIGIN` es opcional pero **recomendado**: sin él, el CORS queda
 > en `*` y cualquier sitio puede invocar las funciones (aunque el JWT y RLS
@@ -109,7 +109,7 @@ dashboard te lo rechaza.
 2. **Developers → API keys** → copia la *Secret key*.
    Empieza en modo **Test** (`sk_test_…`) para no cobrar de verdad.
 3. Guárdala en Supabase como `STRIPE_SECRET_KEY`.
-4. Guarda también `SITE_URL = https://aminomx.vercel.app`.
+4. Guarda también `SITE_URL = https://www.aminosmx.com`.
 5. **Developers → Webhooks → Add endpoint**:
    - URL: `https://hsjdiwqoakmcwultfksj.supabase.co/functions/v1/stripe-webhook`
    - Eventos (exactamente estos 4):
@@ -196,7 +196,7 @@ Nada obligatorio. Vercel solo necesita:
    públicas: Project → Settings → Deployment Protection → *Vercel
    Authentication* → Off para Preview.
 
-Si cambias el dominio (`aminomx.vercel.app` → `aminosmx.com`), actualiza
+Si cambias el dominio (ya se hizo: `aminomx.vercel.app` → `www.aminosmx.com`), actualiza
 **en Supabase**: `SITE_URL` y `ALLOWED_ORIGIN`; y **en el repo**: los
 `<link rel="canonical">`, `og:url`, `robots.txt` y `sitemap.xml`.
 

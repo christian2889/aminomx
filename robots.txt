@@ -1,8 +1,18 @@
 User-agent: *
 Allow: /
-Disallow: /admin.html
-Disallow: /cuenta.html
-Disallow: /checkout.html
-Disallow: /login.html
 
-Sitemap: https://aminomx.vercel.app/sitemap.xml
+# Zonas privadas o sin valor de búsqueda. Con cleanUrls activo las rutas
+# reales no llevan .html, así que se bloquean ambas formas: los buscadores
+# no siguen el redirect 308 para decidir si pueden rastrear.
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /cuenta
+Disallow: /cuenta.html
+Disallow: /checkout
+Disallow: /checkout.html
+Disallow: /login
+Disallow: /login.html
+Disallow: /nueva-contrasena
+Disallow: /nueva-contrasena.html
+
+Sitemap: https://www.aminosmx.com/sitemap.xml

@@ -45,8 +45,11 @@ function setSEO(p, cat) {
   $('[data-seo-desc]')?.setAttribute('content', desc.slice(0, 160));
   $('[data-seo-ogtitle]')?.setAttribute('content', title);
   $('[data-seo-ogdesc]')?.setAttribute('content', desc.slice(0, 200));
-  const url = `${location.origin}/producto?p=${p.slug}`;
+  // Canónica fija al dominio real: si alguien abre la ficha desde el dominio
+  // *.vercel.app o desde el apex, la señal para buscadores sigue siendo una sola.
+  const url = `https://www.aminosmx.com/producto?p=${p.slug}`;
   $('[data-seo-canonical]')?.setAttribute('href', url);
+  $('[data-seo-ogurl]')?.setAttribute('content', url);
 
   const img = p.images?.[0]?.url;
   const jsonld = {
