@@ -28,16 +28,19 @@ const admin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
+// Bodega real como valor por defecto: la dirección no es un secreto (va
+// impresa en cada guía). Los secrets ORIGIN_* siguen teniendo prioridad si
+// algún día cambia la bodega sin redesplegar.
 const ORIGIN = {
   name: Deno.env.get('ORIGIN_NAME') ?? 'Aminos MX',
   company: Deno.env.get('ORIGIN_NAME') ?? 'Aminos MX',
-  street1: Deno.env.get('ORIGIN_STREET') ?? '',
-  postal_code: Deno.env.get('ORIGIN_ZIP') ?? '22000',
+  street1: Deno.env.get('ORIGIN_STREET') ?? 'Ryerson 1600',
+  postal_code: Deno.env.get('ORIGIN_ZIP') ?? '22800',
   area_level1: Deno.env.get('ORIGIN_STATE') ?? 'Baja California',
-  area_level2: Deno.env.get('ORIGIN_CITY') ?? 'Tijuana',
-  area_level3: Deno.env.get('ORIGIN_NEIGHBORHOOD') ?? '',
+  area_level2: Deno.env.get('ORIGIN_CITY') ?? 'Ensenada',
+  area_level3: Deno.env.get('ORIGIN_NEIGHBORHOOD') ?? 'Zona Centro',
   country_code: 'MX',
-  phone: Deno.env.get('ORIGIN_PHONE') ?? '',
+  phone: Deno.env.get('ORIGIN_PHONE') ?? '+526461164390',
   email: Deno.env.get('ORIGIN_EMAIL') ?? 'envios@aminosmx.com',
   reference: Deno.env.get('ORIGIN_REFERENCE') ?? '',
 };
