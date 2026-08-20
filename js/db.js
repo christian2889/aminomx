@@ -177,14 +177,28 @@ export async function restoreOrderStock(orderId) {
   return data === true;
 }
 
-export async function createOrder({ items, email, name, phone, address, coupon, notes }) {
+export async function createOrder({ items, email, name, phone, address, coupon, notes,
+                                    quoteId, rateId }) {
   const { data, error } = await supabase.rpc('create_order', {
     p_items: items, p_email: email, p_name: name ?? null,
     p_phone: phone ?? null, p_address: address ?? null,
     p_coupon: coupon ?? null, p_notes: notes ?? null,
+    // Tarifa de envío elegida: solo IDs. El precio lo relee el servidor de
+    // shipping_quotes; mandar montos desde el navegador no serviría de nada.
+    p_quote_id: quoteId ?? null, p_rate_id: rateId ?? null,
   });
   if (error) throw error;
   return Array.isArray(data) ? data[0] : data;
+}
+
+/** Cotiza envío en vivo con Skydropx para un CP de destino. */
+export async function quoteShipping(to) {
+  const { data, error } = await supabase.functions.invoke('skydropx-rates', {
+    body: { action: 'quote', to },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data; // { quote_id, quotation_id, rates: [...] }
 }
 
 export const trackOrder = async (orderNumber, email) => {

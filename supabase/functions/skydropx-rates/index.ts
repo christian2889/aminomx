@@ -104,31 +104,39 @@ function toAddress(to: Record<string, unknown> = {}) {
 
 /* Las tarifas llegan de forma progresiva: la cotización se marca is_completed
    cuando todas las paqueterías respondieron. Sondeamos con un tope corto. */
-async function waitForRates(quotationId: string, tries = 8, waitMs = 1200) {
+/* Skydropx PRE-CREA una entrada por cada paqueteria/servicio con
+   status:"pending" y total:null, y las va resolviendo en segundos. Contar
+   entradas engana (siempre hay ~25 desde el primer segundo): lo que importa
+   es cuantas ya traen total. */
+async function waitForRates(quotationId: string, tries = 15, waitMs = 1500) {
   let last: Record<string, unknown> = {};
   for (let i = 0; i < tries; i++) {
     const { ok, data } = await sdx(`/quotations/${quotationId}`);
     if (!ok) break;
     last = data;
     const rates = (data?.rates ?? []) as Record<string, unknown>[];
-    if (data?.is_completed === true && rates.length) return data;
-    if (i === 0 && rates.length >= 3) return data; // ya hay opciones suficientes
+    const listas = rates.filter((r) => r?.total != null).length;
+    if (data?.is_completed === true) return data;
+    if (listas >= 3 && i >= 2) return data;
     await new Promise((r) => setTimeout(r, waitMs));
   }
   return last;
 }
 
 function normalizeRates(raw: Record<string, unknown>[] = []) {
+  // Campos reales de PRO v2: provider_name / provider_display_name /
+  // provider_service_name / amount / total / days / currency_code.
   return raw
-    .filter((r) => r?.success !== false && r?.total != null)
+    .filter((r) => r?.total != null && r?.status !== 'pending')
     .map((r) => ({
       id: r.id,
-      provider: r.provider ?? r.carrier ?? null,
-      service: r.provider_service_name ?? r.service_level_name ?? r.service ?? null,
-      days: r.days ?? r.estimated_delivery ?? null,
-      currency: r.currency ?? 'MXN',
-      total: Number(r.total ?? 0),
-      cost_cents: Math.round(Number(r.total ?? 0) * 100),
+      provider: r.provider_display_name ?? r.provider_name ?? r.provider ?? null,
+      service: r.provider_service_name ?? r.service_level_name ?? null,
+      days: r.days ?? null,
+      currency: r.currency_code ?? r.currency ?? 'MXN',
+      total: Number(r.total ?? r.amount ?? 0),
+      cost_cents: Math.round(Number(r.total ?? r.amount ?? 0) * 100),
+      pickup: r.pickup === true,
     }))
     .sort((a, b) => a.cost_cents - b.cost_cents);
 }
@@ -164,16 +172,22 @@ Deno.serve(async (req) => {
         method: 'POST',
         body: JSON.stringify({
           quotation: {
+            // area_level3 es la colonia y Skydropx PRO la exige en ambos
+            // extremos: si va vacía responde 422 sin cotizar. Cuando no la
+            // tenemos usamos el municipio, que es lo más cercano y permite
+            // cotizar; para exactitud conviene fijar ORIGIN_NEIGHBORHOOD.
             address_from: {
               postal_code: ORIGIN.postal_code,
               area_level1: ORIGIN.area_level1,
               area_level2: ORIGIN.area_level2,
+              area_level3: ORIGIN.area_level3 || ORIGIN.area_level2,
               country_code: 'MX',
             },
             address_to: {
               postal_code: dest.postal_code,
               area_level1: dest.area_level1,
               area_level2: dest.area_level2,
+              area_level3: dest.area_level3 || dest.area_level2,
               country_code: dest.country_code,
             },
             parcel: box,
@@ -199,7 +213,36 @@ Deno.serve(async (req) => {
         }, { onConflict: 'order_id' });
       }
 
-      return json({ ok: true, quotation_id: qid, rates });
+      // Sin tarifas casi nunca es un fallo de red: suele ser que la cuenta no
+      // tiene paqueterías habilitadas para esa ruta, o que cada una devolvió su
+      // propio error. Devolvemos el detalle para no quedarnos a ciegas.
+      if (!rates.length) {
+        const raw = (full?.rates ?? []) as Record<string, unknown>[];
+        return json({
+          ok: true, quotation_id: qid, rates: [],
+          diagnostico: {
+            is_completed: full?.is_completed ?? null,
+            tarifas_devueltas: raw.length,
+            motivos: raw.map((r) => ({
+              provider: r.provider ?? null,
+              success: r.success ?? null,
+              error: r.error ?? r.error_messages ?? r.message ?? null,
+              total: r.total ?? null,
+            })).slice(0, 10),
+          },
+        });
+      }
+
+      // La cotización se persiste con service_role y el navegador recibe solo
+      // IDs: create_order releerá el precio de shipping_quotes. Si el cliente
+      // manipula el JSON de tarifas en su consola, no cambia lo que se cobra.
+      const { data: qrow } = await admin
+        .from('shipping_quotes')
+        .insert({ quotation_id: qid, postal_code: dest.postal_code, rates })
+        .select('id')
+        .single();
+
+      return json({ ok: true, quotation_id: qid, quote_id: qrow?.id ?? null, rates });
     }
 
     /* --------------------------------------------------------- generar guía */

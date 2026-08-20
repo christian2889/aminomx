@@ -2,7 +2,7 @@
    Aminos MX — Checkout
    El precio y el stock los valida el servidor (RPC create_order).
    ========================================================================== */
-import { supabase, mxn, createOrder, getProfile, startStripeCheckout } from './db.js';
+import { supabase, mxn, createOrder, getProfile, startStripeCheckout, quoteShipping } from './db.js';
 import { injectIcons, icon } from './icons.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -99,7 +99,14 @@ function readCart() {
             <input type="checkbox" id="fSave" ${def ? '' : 'checked'}> Guardar esta dirección en mi cuenta</label></div>
         </div></div></div>
 
-      <div class="panel"><div class="panel-head"><h2>3 · Forma de pago</h2></div>
+      <div class="panel"><div class="panel-head"><h2>3 · Opciones de envío</h2></div>
+        <div class="panel-body">
+          <div id="shipBox">
+            <p class="help">Escribe tu código postal arriba y cotizamos con las paqueterías en segundos.</p>
+          </div>
+        </div></div>
+
+      <div class="panel"><div class="panel-head"><h2>4 · Forma de pago</h2></div>
         <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
           <label class="pay-opt"><input type="radio" name="pay" value="stripe" checked>
             <span><b>Pago en línea · tarjeta u OXXO</b>
@@ -110,7 +117,7 @@ function readCart() {
             <span><b>Coordinar por WhatsApp</b><span>Te contactamos para acordar la forma de pago.</span></span></label>
         </div></div>
 
-      <div class="panel"><div class="panel-head"><h2>4 · Facturación (opcional)</h2></div>
+      <div class="panel"><div class="panel-head"><h2>5 · Facturación (opcional)</h2></div>
         <div class="panel-body">
           <label class="check" style="margin-bottom:4px">
             <input type="checkbox" id="fInvoice"> Necesito factura (CFDI 4.0)</label>
@@ -159,10 +166,10 @@ function readCart() {
           <span class="help">Se valida al confirmar el pedido.</span>
         </div>
         <div class="sum-row"><span>Subtotal</span><b>${mxn(subtotal)}</b></div>
-        <div class="sum-row"><span>Envío</span>
-          <b>${shipping === 0 ? 'Gratis' : mxn(shipping)}</b></div>
+        <div class="sum-row"><span>Envío <span class="help" id="sumCarrier"></span></span>
+          <b id="sumShip">${shipping === 0 ? 'Gratis' : mxn(shipping)}</b></div>
         <div class="sum-total"><span>Total estimado</span>
-          <span style="color:hsl(var(--primary))">${mxn(subtotal + shipping)}</span></div>
+          <span style="color:hsl(var(--primary))" id="sumTotal">${mxn(subtotal + shipping)}</span></div>
         <button class="btn btn-primary btn-lg btn-block" id="placeOrder" style="margin-top:16px">
           Confirmar pedido</button>
         <p class="help" style="margin-top:12px;text-align:center">
@@ -174,6 +181,84 @@ function readCart() {
   $('#fInvoice').addEventListener('change', (e) => {
     $('#invoiceFields').hidden = !e.target.checked;
   });
+
+  /* ---------------- Cotización de envío en vivo (Skydropx) ----------------
+     El navegador solo maneja IDs de cotización/tarifa; el precio que se cobra
+     lo relee create_order de la tabla shipping_quotes en el servidor. */
+  const envio = { quoteId: null, rateId: null, cents: shipping, gratis: subtotal >= free };
+  let quoteSeq = 0;
+
+  function pintaResumen() {
+    const efectivo = envio.gratis ? 0 : envio.cents;
+    $('#sumShip').textContent = efectivo === 0 ? 'Gratis' : mxn(efectivo);
+    $('#sumTotal').textContent = mxn(subtotal + efectivo);
+  }
+
+  function tarifaHTML(r, checked) {
+    const precio = envio.gratis ? 'Gratis' : mxn(r.cost_cents);
+    return `<label class="pay-opt" style="align-items:center">
+      <input type="radio" name="rate" value="${esc(String(r.id))}" ${checked ? 'checked' : ''}>
+      <span style="display:flex;justify-content:space-between;gap:12px;width:100%;align-items:center">
+        <span><b>${esc(String(r.provider ?? ''))}</b>
+          <span style="display:block;font-size:.78rem;color:hsl(var(--muted-fg))">
+            ${esc(String(r.service ?? ''))}${r.days ? ` · ${esc(String(r.days))} día(s)` : ''}</span></span>
+        <b style="white-space:nowrap">${precio}</b>
+      </span></label>`;
+  }
+
+  async function cotizar() {
+    const cp = $('#fZip').value.trim();
+    if (!/^\d{5}$/.test(cp)) return;
+    const seq = ++quoteSeq;
+    const box = $('#shipBox');
+    box.innerHTML = '<p class="help">Cotizando con las paqueterías…</p>';
+    try {
+      const data = await quoteShipping({
+        postal_code: cp,
+        city: $('#fCity').value.trim(),
+        state: $('#fState').value.trim(),
+        neighborhood: $('#fLine2').value.trim(),
+      });
+      if (seq !== quoteSeq) return; // llegó tarde: el CP ya cambió
+      const rates = (data.rates ?? []).slice(0, 5);
+      if (!rates.length) throw new Error('sin tarifas');
+
+      envio.quoteId = data.quote_id ?? null;
+      envio.rateId = String(rates[0].id);
+      envio.cents = rates[0].cost_cents;
+
+      box.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
+        ${rates.map((r, i) => tarifaHTML(r, i === 0)).join('')}
+        ${envio.gratis ? '<p class="help">Tu pedido supera $2,500: el envío corre por nuestra cuenta 🎉</p>' : ''}
+      </div>`;
+      pintaResumen();
+
+      box.querySelectorAll('input[name="rate"]').forEach((inp) => {
+        inp.addEventListener('change', () => {
+          const r = rates.find((x) => String(x.id) === inp.value);
+          if (!r) return;
+          envio.rateId = String(r.id);
+          envio.cents = r.cost_cents;
+          pintaResumen();
+        });
+      });
+    } catch {
+      if (seq !== quoteSeq) return;
+      // Sin cotización en vivo el pedido no se detiene: tarifa estándar.
+      envio.quoteId = null; envio.rateId = null; envio.cents = flat;
+      box.innerHTML = `<label class="pay-opt"><input type="radio" name="rate" checked>
+        <span><b>Envío estándar</b>
+        <span>Paquetería asignada al preparar tu pedido · ${envio.gratis ? 'Gratis' : mxn(flat)}</span></span></label>`;
+      pintaResumen();
+    }
+  }
+
+  let cpTimer = null;
+  $('#fZip').addEventListener('input', () => {
+    clearTimeout(cpTimer);
+    cpTimer = setTimeout(cotizar, 600);
+  });
+  if (/^\d{5}$/.test($('#fZip').value.trim())) cotizar();
 
   $('#placeOrder').addEventListener('click', async () => {
     const btn = $('#placeOrder');
@@ -212,6 +297,7 @@ function readCart() {
         name: address.recipient, phone: address.phone, address,
         coupon: $('#fCoupon').value.trim() || null,
         notes: $('#fNotes').value.trim() || null,
+        quoteId: envio.quoteId, rateId: envio.rateId,
       });
 
       // Método de pago elegido + datos fiscales
