@@ -127,9 +127,23 @@ Usa la **API v2 de Skydropx PRO** (OAuth2 `client_credentials`).
    `delivered` → `delivered` (con correo automático al cliente en ambos).
    Nunca retrocede un pedido que ya avanzó.
 
-Desde el panel: **Pedido → Envío → Cotizar Skydropx** lista las tarifas
-ordenadas por precio y **Generar guía** crea la guía con la que elijas,
-llenando paquetería, número de guía, rastreo y PDF de la etiqueta.
+**Guía automática:** al confirmarse un pago (webhook de Stripe), la guía se
+genera sola en segundo plano con la MISMA tarifa que el cliente eligió y pagó
+en el checkout; si esa tarifa ya venció (OXXO se paga días después), recotiza
+y prefiere la misma paquetería/servicio o cae a la más barata. El pedido pasa
+a `processing` y la línea de tiempo registra «Guía generada automáticamente ·
+<número>». Si Skydropx rechaza, el pago NO se afecta: queda una nota interna
+en el pedido y la guía se genera desde el panel.
+
+Desde el panel (manual o reintento): **Pedido → Envío → Cotizar Skydropx**
+lista las tarifas ordenadas por precio y **Generar guía** crea la guía con la
+que elijas, llenando paquetería, número de guía, rastreo y PDF de la etiqueta.
+Generar guías (manual o automático) descuenta saldo Skydropx, así que la
+función lo permite solo a staff/admin.
+
+Cada guía viaja con su carta porte: clave SAT de producto
+`SKYDROPX_CONSIGNMENT_CODE` (default `53131619` · Cosméticos) y embalaje
+`SKYDROPX_PACKAGE_TYPE` (default `4G` · caja de cartón).
 
 > Ambas integraciones están **fail-safe**: sin secretos configurados el
 > sistema opera manualmente (guías a mano en el panel, sin correos).

@@ -5,8 +5,11 @@
 // (HMAC-SHA256 del esquema oficial t.payload → v1).
 // Eventos: checkout.session.completed, checkout.session.async_payment_succeeded,
 //          checkout.session.async_payment_failed, checkout.session.expired
+// Al confirmar un pago dispara la guía Skydropx en segundo plano
+// (_shared/skydropx.ts · autoLabelOrder), sin bloquear la respuesta a Stripe.
 // ============================================================================
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { autoLabelOrder } from '../_shared/skydropx.ts';
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status, headers: { 'Content-Type': 'application/json' },
@@ -51,12 +54,12 @@ async function verifySignature(payload: string, header: string, secret: string) 
   });
 }
 
-async function markPaid(session: any) {
+async function markPaid(session: any): Promise<string | null> {
   const orderId = session?.metadata?.order_id ?? session?.client_reference_id;
-  if (!orderId) return;
+  if (!orderId) return null;
   const { data: order } = await admin.from('orders')
     .select('id, status, payment_status').eq('id', orderId).single();
-  if (!order || order.payment_status === 'paid') return;
+  if (!order || order.payment_status === 'paid') return null;
 
   await admin.from('orders').update({
     payment_status: 'paid',
@@ -70,6 +73,22 @@ async function markPaid(session: any) {
     order_id: orderId, status: 'paid',
     note: 'Pago confirmado (Stripe)',
   });
+  return orderId;
+}
+
+// Guía Skydropx en cuanto se confirma el pago. Corre DESPUÉS de responder a
+// Stripe (waitUntil): un fallo o la espera de la paquetería jamás tumban la
+// confirmación del pago; si no sale, queda nota interna y el panel la genera.
+function scheduleAutoLabel(orderId: string) {
+  const run = autoLabelOrder(admin, orderId)
+    .then((r) => {
+      if (!r?.ok) console.error('auto-label', orderId, JSON.stringify(r));
+    })
+    .catch((e) => console.error('auto-label', orderId, e));
+  const rt = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } })
+    .EdgeRuntime;
+  if (rt?.waitUntil) rt.waitUntil(run);
+  return run;
 }
 
 Deno.serve(async (req) => {
@@ -90,7 +109,8 @@ Deno.serve(async (req) => {
     switch (event?.type) {
       case 'checkout.session.completed':
         if (session?.payment_status === 'paid') {
-          await markPaid(session); // tarjeta: pago inmediato
+          const paidNow = await markPaid(session); // tarjeta: pago inmediato
+          if (paidNow) scheduleAutoLabel(paidNow);
         } else if (orderId) {
           await admin.from('order_events').insert({
             order_id: orderId, status: 'pending',
@@ -98,9 +118,11 @@ Deno.serve(async (req) => {
           });
         }
         break;
-      case 'checkout.session.async_payment_succeeded':
-        await markPaid(session); // OXXO pagado
+      case 'checkout.session.async_payment_succeeded': {
+        const paidNow = await markPaid(session); // OXXO pagado
+        if (paidNow) scheduleAutoLabel(paidNow);
         break;
+      }
       case 'checkout.session.async_payment_failed':
         if (orderId) {
           await admin.from('orders').update({ payment_status: 'failed' }).eq('id', orderId);

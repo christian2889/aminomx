@@ -575,7 +575,7 @@ async function openOrder(id) {
                 <div class="cell-sub">${esc(r.service ?? '')}${r.days ? ` · ${esc(String(r.days))} día(s)` : ''}</div></td>
             <td class="num"><strong>${mxn(r.cost_cents)}</strong></td>
             <td class="num"><button class="btn btn-outline btn-sm" data-rate="${esc(String(r.id))}"
-              data-carrier="${esc(r.provider ?? '')}">Generar guía</button></td></tr>`).join('')}
+              data-carrier="${esc(r.provider ?? '')}" data-service="${esc(r.service ?? '')}">Generar guía</button></td></tr>`).join('')}
           </tbody></table></div>`;
 
         box.onclick = async (ev) => {
@@ -586,7 +586,8 @@ async function openOrder(id) {
             const res = await supabase.functions.invoke('skydropx-rates', {
               body: {
                 action: 'label', order_id: o.id, quotation_id: data.quotation_id,
-                rate_id: b.dataset.rate, to: { ...addr, email: o.email, phone: o.phone },
+                rate_id: b.dataset.rate, carrier: b.dataset.carrier, service: b.dataset.service,
+                to: { ...addr, email: o.email, phone: addr.phone ?? o.phone },
               },
             });
             if (res.error) throw res.error;
@@ -601,7 +602,15 @@ async function openOrder(id) {
                    ${icon('external')} Descargar guía</a></p>` : '';
           } catch (err) {
             b.disabled = false; b.textContent = 'Generar guía';
-            toast(err.message ?? 'No se pudo generar la guía', 'err');
+            // El motivo real viene en el cuerpo de la respuesta 4xx/5xx, no
+            // en err.message (que solo dice "non-2xx status code").
+            let msg = err.message ?? 'No se pudo generar la guía';
+            try {
+              const body = await err.context?.json?.();
+              const det = body?.detail?.errors ?? body?.detail ?? body?.error;
+              if (det) msg = `Skydropx: ${typeof det === 'string' ? det : JSON.stringify(det)}`;
+            } catch { /* sin detalle */ }
+            toast(msg, 'err');
           }
         };
       } catch (e) {

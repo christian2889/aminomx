@@ -78,7 +78,9 @@ Te da **dos** valores porque la API v2 usa OAuth2:
 | `SKYDROPX_CLIENT_SECRET` | **Clave secreta del cliente (API Secret key)** | `skydropx-rates` |
 | `SKYDROPX_API_URL` | `https://pro.skydropx.com/api/v1` (default) · sandbox: `https://sb-pro.skydropx.com/api/v1` | `skydropx-rates` |
 | `SKYDROPX_WEBHOOK_SECRET` | invéntalo tú (cadena larga y aleatoria) | `skydropx-webhook` |
-| `ORIGIN_*` | **Opcionales**: la bodega real ya viene por defecto en el código — Ryerson 1600, Zona Centro, C.P. 22800, Ensenada, B.C., tel. +52 646 116 4390. Estos secrets solo hacen falta si la bodega cambia y no quieres redesplegar. | dirección de origen |
+| `SKYDROPX_CONSIGNMENT_CODE` | **Opcional**: clave SAT de carta porte que va en cada guía. Default `53131619` (Cosméticos). | guías |
+| `SKYDROPX_PACKAGE_TYPE` | **Opcional**: embalaje SAT. Default `4G` (caja de cartón). | guías |
+| `ORIGIN_*` | **Opcionales**: la bodega real ya viene por defecto en el código — Ryerson 1600, Zona Centro, C.P. 22800, Ensenada, B.C., tel. +52 646 116 4390 (`ORIGIN_REFERENCE` default "Bodega Aminos MX"; máx. 40 caracteres). Estos secrets solo hacen falta si la bodega cambia y no quieres redesplegar. | dirección de origen |
 
 > La función pide el token OAuth sola (`grant_type: client_credentials`),
 > lo cachea las 2 h que dura y lo renueva antes de vencer. Tú solo capturas
