@@ -6,6 +6,6 @@
 window.AMX_CONFIG = {
   SUPABASE_URL: "https://hsjdiwqoakmcwultfksj.supabase.co",
   SUPABASE_KEY: "sb_publishable_-tqa9xesQeXjw5T5OOkfsw_3nVbGtVQ",
-  FREE_SHIPPING_CENTS: 250000,
+  FREE_SHIPPING_CENTS: 350000,
   SHIPPING_FLAT_CENTS: 18900,
 };

@@ -36,7 +36,7 @@ assets/         Favicon (marca ADN teal)
   metabólicos, regenerativos, anti-edad, aminoácidos), renderizado desde datos.
 - **Búsqueda** y **filtros** por categoría; **quick-view** (modal) por producto.
 - **Carrito** con cajón lateral, cantidades, progreso de envío gratis (umbral
-  $2,500 MXN), subtotal/envío/total y **toasts**. Persistente en `localStorage`.
+  $3,500 MXN), subtotal/envío/total y **toasts**. Persistente en `localStorage`.
 - **Ficha de producto** (BPC-157) con especificación técnica, acordeones, stepper,
   wishlist y "se compran juntos".
 - **ES/EN** — el toggle intercambia todo el texto (`data-en` + datos de producto) y
@@ -59,7 +59,7 @@ El sitio ahora es una plataforma completa conectada a **Supabase**
 - **Tienda** (`index.html`, `producto.html`) — catálogo en vivo desde la base
   (con respaldo embebido sin conexión), carrito y checkout real.
 - **Checkout** (`checkout.html`) — pedido validado en servidor (RPC), cupones,
-  envío gratis ≥ $2,500 MXN.
+  envío gratis ≥ $3,500 MXN.
 - **Cuenta del cliente** (`cuenta.html`) — pedidos con línea de tiempo,
   rastreo de guía, direcciones y perfil. Acceso en `login.html`.
 - **Seguimiento sin cuenta** (`seguimiento.html`) — número de pedido + correo.

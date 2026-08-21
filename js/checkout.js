@@ -66,7 +66,7 @@ function readCart() {
     .select('*').order('is_default', { ascending: false });
 
   const subtotal = items.reduce((s, i) => s + i.p.price_cents * i.qty, 0);
-  const free = cfg.FREE_SHIPPING_CENTS ?? 250000;
+  const free = cfg.FREE_SHIPPING_CENTS ?? 350000;
   const flat = cfg.SHIPPING_FLAT_CENTS ?? 18900;
   const shipping = subtotal >= free ? 0 : flat;
   const def = addresses?.[0];
@@ -229,7 +229,7 @@ function readCart() {
 
       box.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
         ${rates.map((r, i) => tarifaHTML(r, i === 0)).join('')}
-        ${envio.gratis ? '<p class="help">Tu pedido supera $2,500: el envío corre por nuestra cuenta 🎉</p>' : ''}
+        ${envio.gratis ? '<p class="help">Tu pedido supera $3,500: el envío corre por nuestra cuenta 🎉</p>' : ''}
       </div>`;
       pintaResumen();
 
