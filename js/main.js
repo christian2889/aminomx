@@ -19,7 +19,8 @@
     { id: "metabolicos",   es: "Metabólicos",           en: "Metabolic",           icon: "i-heart-pulse" },
     { id: "regenerativos", es: "Regenerativos",         en: "Regenerative",        icon: "i-syringe" },
     { id: "anti-edad",     es: "Anti-edad",             en: "Anti-aging",          icon: "i-sparkles" },
-    { id: "aminoacidos",   es: "Aminoácidos",           en: "Amino acids",         icon: "i-flame" }
+    { id: "aminoacidos",   es: "Aminoácidos",           en: "Amino acids",         icon: "i-flame" },
+    { id: "insumos",       es: "Insumos",               en: "Supplies",            icon: "i-syringe" }
   ];
 
   var P = function (id, name, cat, price, compareAt, purity, presEs, presEn, descEs, descEn, tagsEs, tagsEn, stock, flags) {
@@ -31,111 +32,83 @@
 
   var FALLBACK_PRODUCTS = [
     // Pérdida de peso
-    P("semaglutide-5","Semaglutide","perdida-peso",1890,2290,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "Análogo GLP-1 estudiado en investigación sobre control de apetito, sensación de saciedad y manejo de peso. Incluye certificado de análisis (COA) por lote.",
-      "GLP-1 analog studied in research on appetite control, satiety and weight management. Includes a certificate of analysis (COA) per batch.",
-      ["GLP-1","Saciedad","Control de apetito"],["GLP-1","Satiety","Appetite control"],34,{b:1,s:1}),
-    P("tirzepatide-10","Tirzepatide","perdida-peso",2490,2990,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
-      "Agonista dual GIP/GLP-1 de referencia en estudios de reducción de peso y salud metabólica. Liofilizado con pureza verificada por HPLC.",
-      "Dual GIP/GLP-1 agonist, a reference in weight-reduction and metabolic-health studies. Lyophilized with HPLC-verified purity.",
-      ["GIP/GLP-1","Pérdida de peso","Metabolismo"],["GIP/GLP-1","Weight loss","Metabolism"],27,{b:1,s:1}),
-    P("retatrutide-20","Retatrutide","perdida-peso",3290,0,"≥99%","Vial liofilizado 20 mg","Lyophilized vial 20 mg",
-      "Agonista triple GIP/GLP-1/Glucagón. Compuesto de nueva generación en investigación metabólica y de composición corporal.",
-      "Triple GIP/GLP-1/Glucagon agonist. A next-generation compound in metabolic and body-composition research.",
-      ["Triple agonista","Nueva generación"],["Triple agonist","Next generation"],40,{n:1}),
-    P("cagrilintide-5","Cagrilintide","perdida-peso",2890,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "Análogo de amilina estudiado en combinación con GLP-1 para investigación de saciedad y control glucémico.",
-      "Amylin analog studied in combination with GLP-1 for satiety and glycemic-control research.",
-      ["Amilina","Saciedad"],["Amylin","Satiety"],12,{s:1}),
-    P("aod9604-5","AOD-9604","perdida-peso",1490,1790,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "Fragmento modificado de hGH estudiado en investigación de lipólisis y metabolismo de grasas sin efecto en IGF-1.",
-      "Modified hGH fragment studied in lipolysis and fat-metabolism research without an effect on IGF-1.",
-      ["Lipólisis","Metabolismo de grasas"],["Lipolysis","Fat metabolism"],41,{s:1}),
+    P("retatrutide-5","Retatrutide","perdida-peso",1190,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
+      "Agonista triple GIP/GLP-1/Glucagón. Compuesto de nueva generación en investigación metabólica y de composición corporal. Incluye COA por lote.",
+      "Triple GIP/GLP-1/Glucagon agonist. A next-generation compound in metabolic and body-composition research. Includes a COA per batch.",
+      ["Triple agonista","Pérdida de peso"],["Triple agonist","Weight loss"],30,{}),
+    P("retatrutide-15","Retatrutide","perdida-peso",2690,0,"≥99%","Vial liofilizado 15 mg","Lyophilized vial 15 mg",
+      "Agonista triple GIP/GLP-1/Glucagón en presentación de 15 mg para protocolos de investigación de mayor duración.",
+      "Triple GIP/GLP-1/Glucagon agonist in a 15 mg presentation for longer research protocols.",
+      ["Triple agonista","Alta concentración"],["Triple agonist","High strength"],30,{b:1}),
+    P("tirzepatide-5","Tirzepatide","perdida-peso",890,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
+      "Agonista dual GIP/GLP-1 de referencia en estudios de reducción de peso y salud metabólica. Pureza verificada por HPLC.",
+      "Dual GIP/GLP-1 agonist, a reference in weight-reduction and metabolic-health studies. HPLC-verified purity.",
+      ["GIP/GLP-1","Pérdida de peso"],["GIP/GLP-1","Weight loss"],10,{b:1}),
+    P("tirzepatide-15","Tirzepatide","perdida-peso",1790,0,"≥99%","Vial liofilizado 15 mg","Lyophilized vial 15 mg",
+      "Agonista dual GIP/GLP-1 en presentación de 15 mg para etapas avanzadas de investigación metabólica.",
+      "Dual GIP/GLP-1 agonist in a 15 mg presentation for advanced stages of metabolic research.",
+      ["GIP/GLP-1","Alta concentración"],["GIP/GLP-1","High strength"],10,{}),
+    P("hgh-fragment-5","HGH Fragment 176-191","perdida-peso",1290,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
+      "Fragmento C-terminal de la hormona de crecimiento estudiado en investigación de lipólisis y metabolismo de grasas sin efecto en IGF-1.",
+      "C-terminal growth-hormone fragment studied in lipolysis and fat-metabolism research without an effect on IGF-1.",
+      ["Lipólisis","Fragmento hGH"],["Lipolysis","hGH fragment"],10,{}),
     // Recomposición
-    P("ipamorelin-5","Ipamorelin","recomposicion",1390,1690,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
+    P("tesamorelin-10","Tesamorelin","recomposicion",1990,0,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
+      "GHRH estudiado en investigación sobre grasa visceral, cognición y composición corporal. Presentación de 10 mg.",
+      "GHRH studied in research on visceral fat, cognition and body composition. 10 mg presentation.",
+      ["GHRH","Grasa visceral"],["GHRH","Visceral fat"],10,{}),
+    P("ipamorelin-5","Ipamorelin","recomposicion",790,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
       "Secretagogo de GH altamente selectivo. Referencia en estudios de masa magra, recuperación y calidad del sueño.",
       "Highly selective GH secretagogue. A reference in lean-mass, recovery and sleep-quality studies.",
-      ["GHRP","Masa magra","Recuperación"],["GHRP","Lean mass","Recovery"],48,{b:1,s:1}),
-    P("cjc1295-nodac-5","CJC-1295 sin DAC","recomposicion",1490,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "GHRH modificado de vida media corta. Se estudia comúnmente en sinergia con Ipamorelin para pulsos naturales de GH.",
-      "Modified short-half-life GHRH. Commonly studied in synergy with Ipamorelin for natural GH pulses.",
-      ["GHRH","Sinergia con Ipamorelin"],["GHRH","Ipamorelin synergy"],39,{s:1}),
-    P("tesamorelin-5","Tesamorelin","recomposicion",2790,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "GHRH estudiado en investigación sobre grasa visceral, cognición y composición corporal.",
-      "GHRH studied in research on visceral fat, cognition and body composition.",
-      ["GHRH","Grasa visceral"],["GHRH","Visceral fat"],9,{n:1,s:1}),
-    P("mk677-10","MK-677 (Ibutamoren)","recomposicion",1590,1890,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
-      "Secretagogo oral de GH estudiado en investigación de densidad ósea, masa magra y sueño profundo.",
-      "Oral GH secretagogue studied in research on bone density, lean mass and deep sleep.",
-      ["Secretagogo","Densidad ósea"],["Secretagogue","Bone density"],52,{s:1}),
-    P("igf1lr3-1","IGF-1 LR3","recomposicion",3190,0,"≥99%","Vial liofilizado 1 mg","Lyophilized vial 1 mg",
-      "Análogo de IGF-1 de vida media prolongada. Referencia en estudios de hipertrofia e hiperplasia muscular.",
-      "Long-half-life IGF-1 analog. A reference in muscle hypertrophy and hyperplasia studies.",
-      ["IGF-1","Hipertrofia"],["IGF-1","Hypertrophy"],7,{s:1}),
+      ["GHRP","Masa magra"],["GHRP","Lean mass"],10,{}),
+    P("pegmgf-2","PEG-MGF","recomposicion",990,0,"≥99%","Vial liofilizado 2 mg","Lyophilized vial 2 mg",
+      "Factor de crecimiento mecánico pegilado, estudiado en investigación de reparación y crecimiento del tejido muscular.",
+      "PEGylated mechano growth factor studied in muscle-tissue repair and growth research.",
+      ["MGF","Recuperación"],["MGF","Recovery"],10,{}),
+    P("hgh-24iu","HGH Somatropina 191aa","recomposicion",1390,0,"≥99%","Vial liofilizado 24 UI","Lyophilized vial 24 IU",
+      "Hormona de crecimiento humana recombinante (191 aminoácidos) en presentación de 24 UI para investigación de laboratorio.",
+      "Recombinant human growth hormone (191 amino acids) in a 24 IU presentation for laboratory research.",
+      ["GH","191aa"],["GH","191aa"],10,{}),
     // Metabólicos
-    P("motsc-10","MOTS-c","metabolicos",1890,2190,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
+    P("motsc-15","MOTS-c","metabolicos",1490,0,"≥99%","Vial liofilizado 15 mg","Lyophilized vial 15 mg",
       "Péptido mitocondrial estudiado en investigación de sensibilidad a la insulina, ejercicio y envejecimiento metabólico.",
       "Mitochondrial peptide studied in research on insulin sensitivity, exercise and metabolic aging.",
-      ["Mitocondrial","Sensibilidad insulínica"],["Mitochondrial","Insulin sensitivity"],23,{b:1,s:1}),
-    P("5amino1mq-50","5-Amino-1MQ","metabolicos",1690,0,"≥99%","Vial liofilizado 50 mg","Lyophilized vial 50 mg",
-      "Inhibidor de NNMT estudiado en investigación de metabolismo celular, energía y composición corporal.",
-      "NNMT inhibitor studied in research on cellular metabolism, energy and body composition.",
-      ["NNMT","Energía celular"],["NNMT","Cellular energy"],31,{s:1}),
-    P("aicar-50","AICAR","metabolicos",1990,0,"≥99%","Vial liofilizado 50 mg","Lyophilized vial 50 mg",
-      "Activador de AMPK de referencia en estudios de resistencia metabólica y metabolismo energético.",
-      "AMPK activator, a reference in metabolic-endurance and energy-metabolism studies.",
-      ["AMPK","Resistencia metabólica"],["AMPK","Metabolic endurance"],18,{s:1}),
+      ["Mitocondrial","Sensibilidad insulínica"],["Mitochondrial","Insulin sensitivity"],10,{}),
+    P("ss31-10","SS-31 (Elamipretide)","metabolicos",1590,0,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
+      "Tetrapéptido dirigido a la membrana mitocondrial, estudiado en investigación de función mitocondrial y estrés oxidativo.",
+      "Mitochondria-targeted tetrapeptide studied in mitochondrial-function and oxidative-stress research.",
+      ["Mitocondrial","Antioxidante"],["Mitochondrial","Antioxidant"],10,{n:1}),
     // Regenerativos
-    P("bpc157-5","BPC-157","regenerativos",1290,1590,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "Péptido de protección corporal derivado de proteína gástrica. El más estudiado en investigación de reparación de tejidos, tendones y mucosa gastrointestinal.",
-      "Body-protection peptide derived from gastric protein. The most studied in research on tissue, tendon and gastrointestinal-mucosa repair.",
-      ["Reparación","Tejidos","GI"],["Repair","Tissues","GI"],64,{b:1,s:1}),
-    P("tb500-5","TB-500","regenerativos",1390,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
-      "Fragmento de Timosina Beta-4 estudiado en investigación de cicatrización, flexibilidad y recuperación muscular.",
-      "Thymosin Beta-4 fragment studied in research on wound healing, flexibility and muscle recovery.",
-      ["Tβ4","Cicatrización","Flexibilidad"],["Tβ4","Healing","Flexibility"],57,{b:1,s:1}),
-    P("ghkcu-50","GHK-Cu","regenerativos",1590,1890,"≥99%","Vial liofilizado 50 mg","Lyophilized vial 50 mg",
-      "Tripéptido de cobre estudiado en investigación de colágeno, piel, cabello y procesos de remodelación tisular.",
-      "Copper tripeptide studied in research on collagen, skin, hair and tissue-remodeling processes.",
-      ["Colágeno","Piel","Cobre"],["Collagen","Skin","Copper"],44,{b:1,s:1}),
-    P("kpv-10","KPV","regenerativos",1490,0,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
+    P("glow70-blend","Blend Glow70 (BPC-157 + GHK-Cu + TB-500)","regenerativos",2190,0,"≥99%","Vial liofilizado 70 mg (10+50+10)","Lyophilized vial 70 mg (10+50+10)",
+      "Combinación “Glow” de los tres péptidos más estudiados en regeneración: BPC-157 10 mg, GHK-Cu 50 mg y TB-500 10 mg en un solo vial.",
+      "“Glow” combination of the three most-studied regenerative peptides: BPC-157 10 mg, GHK-Cu 50 mg and TB-500 10 mg in a single vial.",
+      ["Combo","Piel y tejidos"],["Combo","Skin & tissue"],10,{n:1}),
+    P("kpv-5","KPV","regenerativos",790,0,"≥99%","Vial liofilizado 5 mg","Lyophilized vial 5 mg",
       "Tripéptido derivado de α-MSH estudiado en investigación de inflamación intestinal y procesos inmunomoduladores.",
       "α-MSH-derived tripeptide studied in research on intestinal inflammation and immunomodulatory processes.",
-      ["Antiinflamatorio","Inmunomodulador"],["Anti-inflammatory","Immunomodulator"],26,{s:1}),
-    P("wolverine-blend","Blend BPC-157 + TB-500","regenerativos",2390,2680,"≥99%","Vial liofilizado 5 mg + 5 mg","Lyophilized vial 5 mg + 5 mg",
-      "Combinación “Wolverine” de los dos péptidos regenerativos más estudiados, en un solo vial liofilizado.",
-      "“Wolverine” combination of the two most-studied regenerative peptides in a single lyophilized vial.",
-      ["Combo","Recuperación avanzada"],["Combo","Advanced recovery"],21,{n:1,s:1}),
+      ["Antiinflamatorio","Inmunomodulador"],["Anti-inflammatory","Immunomodulator"],10,{}),
     // Anti-edad
-    P("epitalon-10","Epitalon","anti-edad",1690,0,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
-      "Tetrapéptido estudiado en investigación de telomerasa, ritmos circadianos y biogerontología.",
-      "Tetrapeptide studied in research on telomerase, circadian rhythms and biogerontology.",
-      ["Telomerasa","Longevidad"],["Telomerase","Longevity"],19,{s:1}),
-    P("nad500","NAD+","anti-edad",1890,2290,"≥99%","Vial liofilizado 500 mg","Lyophilized vial 500 mg",
+    P("glutation-600","Glutatión","anti-edad",590,0,"≥99%","Vial liofilizado 600 mg","Lyophilized vial 600 mg",
+      "Antioxidante maestro del organismo, estudiado en investigación de detoxificación hepática, piel y estrés oxidativo.",
+      "The body's master antioxidant, studied in research on liver detoxification, skin and oxidative stress.",
+      ["Antioxidante","Detox"],["Antioxidant","Detox"],10,{}),
+    P("nad-500","NAD+","anti-edad",890,0,"≥99%","Vial liofilizado 500 mg","Lyophilized vial 500 mg",
       "Coenzima esencial estudiada en investigación de energía mitocondrial, sirtuinas y salud celular.",
       "Essential coenzyme studied in research on mitochondrial energy, sirtuins and cellular health.",
-      ["Coenzima","Mitocondria","Energía"],["Coenzyme","Mitochondria","Energy"],33,{b:1,s:1}),
-    P("thymalin-20","Thymalin","anti-edad",1790,0,"≥99%","Vial liofilizado 20 mg","Lyophilized vial 20 mg",
-      "Complejo timótico estudiado en investigación de inmunorregulación y envejecimiento del sistema inmune.",
-      "Thymic complex studied in research on immunoregulation and immune-system aging.",
-      ["Inmunidad","Timo"],["Immunity","Thymus"],14,{s:1}),
-    // Aminoácidos
-    P("lcarnitina-500","L-Carnitina","aminoacidos",690,890,"Grado USP","Frasco 500 mg/mL × 10 mL","Bottle 500 mg/mL × 10 mL",
-      "Aminoácido esencial en el transporte de ácidos grasos a la mitocondria. Formato inyectable de grado USP.",
-      "Essential amino acid in the transport of fatty acids to the mitochondria. USP-grade injectable format.",
-      ["Metabolismo de grasas","Energía"],["Fat metabolism","Energy"],70,{s:1}),
-    P("glutamina-200","L-Glutamina","aminoacidos",590,0,"Grado USP","Frasco 200 mg/mL × 30 mL","Bottle 200 mg/mL × 30 mL",
-      "El aminoácido más abundante del organismo. Apoyo en recuperación muscular y salud intestinal.",
-      "The most abundant amino acid in the body. Support for muscle recovery and gut health.",
-      ["Recuperación","Intestino"],["Recovery","Gut"],82,{s:1}),
-    P("bcaa-blend","BCAA 2:1:1","aminoacidos",790,950,"Grado USP","Frasco × 30 mL","Bottle × 30 mL",
-      "Leucina, isoleucina y valina en proporción 2:1:1. Base de suplementación para síntesis proteica.",
-      "Leucine, isoleucine and valine in a 2:1:1 ratio. A supplementation base for protein synthesis.",
-      ["Síntesis proteica","Base"],["Protein synthesis","Base"],55,{s:1}),
-    P("cjc1295-ipamorelin-blend","Blend CJC-1295 sin DAC + Ipamorelin","recomposicion",2490,2880,"≥99%","Vial liofilizado 5 mg + 5 mg","Lyophilized vial 5 mg + 5 mg",
-      "La sinergia más estudiada para pulsos naturales de GH: el GHRH de vida media corta junto al secretagogo más selectivo, en un solo vial liofilizado.",
-      "The most-studied synergy for natural GH pulses: the short half-life GHRH alongside the most selective secretagogue, in a single lyophilized vial.",
-      ["Combo","Recomposición"],["Combo","Recomposition"],40,{b:1,n:1})
+      ["Coenzima","Energía celular"],["Coenzyme","Cellular energy"],10,{}),
+    P("ghkcu-50","GHK-Cu","anti-edad",690,0,"≥99%","Vial liofilizado 50 mg","Lyophilized vial 50 mg",
+      "Tripéptido de cobre estudiado en investigación de colágeno, piel, cabello y remodelación tisular.",
+      "Copper tripeptide studied in research on collagen, skin, hair and tissue remodeling.",
+      ["Colágeno","Piel"],["Collagen","Skin"],10,{}),
+    // Insumos
+    P("agua-bacteriostatica-3ml","Agua bacteriostática","insumos",149,0,"USP","Vial estéril 3 mL","Sterile vial 3 mL",
+      "Agua estéril con alcohol bencílico al 0.9% para reconstitución de péptidos liofilizados en laboratorio. Vial de 3 mL.",
+      "Sterile water with 0.9% benzyl alcohol for reconstituting lyophilized peptides in the lab. 3 mL vial.",
+      ["Reconstitución","Insumo"],["Reconstitution","Supply"],40,{}),
+    P("agua-bacteriostatica-10ml","Agua bacteriostática","insumos",249,0,"USP","Vial estéril 10 mL","Sterile vial 10 mL",
+      "Agua estéril con alcohol bencílico al 0.9% para reconstitución de péptidos liofilizados en laboratorio. Vial de 10 mL.",
+      "Sterile water with 0.9% benzyl alcohol for reconstituting lyophilized peptides in the lab. 10 mL vial.",
+      ["Reconstitución","Insumo"],["Reconstitution","Supply"],40,{})
   ];
 
   var PRODUCTS = FALLBACK_PRODUCTS;
@@ -232,10 +205,15 @@
   }
 
   /* -------------------- Categorías -------------------- */
+  // Una categoría sin productos no se muestra (ni tarjeta ni filtro): el
+  // catálogo cambia por temporada y las vacías solo llevarían a un grid vacío.
+  function catCount(id) {
+    return PRODUCTS.filter(function (p) { return p.category === id; }).length;
+  }
   function renderCats() {
     var box = $("[data-cats]"); if (!box) return;
-    box.innerHTML = CATEGORIES.filter(function (c) { return c.id !== "todos"; }).map(function (c) {
-      var count = PRODUCTS.filter(function (p) { return p.category === c.id; }).length;
+    box.innerHTML = CATEGORIES.filter(function (c) { return c.id !== "todos" && catCount(c.id) > 0; }).map(function (c) {
+      var count = catCount(c.id);
       return '<button class="cat" data-gocat="' + c.id + '">' +
         '<span class="tile">' + icon(c.icon) + '</span>' +
         '<span class="cname">' + esc(T(c.es, c.en)) + '</span>' +
@@ -246,7 +224,7 @@
   /* -------------------- Filtros -------------------- */
   function renderFilters() {
     var box = $("[data-filters]"); if (!box) return;
-    box.innerHTML = CATEGORIES.map(function (c) {
+    box.innerHTML = CATEGORIES.filter(function (c) { return c.id === "todos" || catCount(c.id) > 0; }).map(function (c) {
       return '<button class="filter' + (state.cat === c.id ? " active" : "") + '" data-filter="' + c.id + '">' + esc(T(c.es, c.en)) + "</button>";
     }).join("");
   }
