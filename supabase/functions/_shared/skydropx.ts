@@ -288,6 +288,42 @@ type Client = {
   from: (t: string) => any;
 };
 
+/* ------------------------------------------------- entrega local Ensenada ---
+   El reparto lo hace el dueño (app DiDi o asociado "Aminos MX VIP"); DiDi no
+   tiene API pública de mensajería, así que la tienda solo ofrece la opción y
+   el cliente coordina por WhatsApp tras pagar. Config en settings, key
+   'local_delivery': { enabled, provider, service, cost_cents,
+   min_subtotal_cents, cp_prefixes }. La tarifa viaja por el mismo riel que
+   las de Skydropx (shipping_quotes → create_order), que revalida el mínimo. */
+export const LOCAL_RATE_ID = 'local-didi';
+
+export async function localRateFor(admin: Client, postalCode: string) {
+  try {
+    const { data } = await admin.from('settings')
+      .select('value').eq('key', 'local_delivery').maybeSingle();
+    const cfg = (data?.value ?? {}) as Record<string, any>;
+    if (cfg.enabled !== true) return null;
+    const cp = String(postalCode ?? '').trim();
+    const prefijos = (cfg.cp_prefixes ?? []) as unknown[];
+    if (!cp || !prefijos.some((p) => cp.startsWith(String(p)))) return null;
+    const cents = Math.max(0, Number(cfg.cost_cents ?? 0) || 0);
+    return {
+      id: LOCAL_RATE_ID,
+      provider: String(cfg.provider ?? 'Entrega local Ensenada'),
+      service: String(cfg.service ?? 'Mismo día · DiDi o asociado Aminos MX VIP'),
+      days: 0,
+      currency: 'MXN',
+      total: cents / 100,
+      cost_cents: cents,
+      pickup: false,
+      local: true,
+      min_subtotal_cents: Math.max(0, Number(cfg.min_subtotal_cents ?? 0) || 0),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function saveLabelToOrder(
   admin: Client,
   orderId: string,
@@ -359,6 +395,27 @@ export async function autoLabelOrder(
       .select('*').eq('order_id', orderId).maybeSingle();
     if (ship?.tracking_number) {
       return { ok: true, already: true, tracking_number: ship.tracking_number };
+    }
+
+    // Entrega local Ensenada: no hay guía de paquetería. El pedido pasa a
+    // preparación, el cliente ve en su línea de tiempo cómo coordinar por
+    // WhatsApp y el panel recibe la instrucción operativa.
+    if (ship?.skydropx_rate_id === LOCAL_RATE_ID) {
+      let status = ord.status;
+      if (status === 'pending' || status === 'paid') {
+        await admin.from('orders').update({ status: 'processing' }).eq('id', orderId);
+        status = 'processing';
+      }
+      await admin.from('order_events').insert({
+        order_id: orderId, status,
+        note: 'Entrega local en Ensenada: escríbenos por WhatsApp al +52 646 116 4390 para coordinar tu entrega el mismo día.',
+      });
+      await admin.from('order_events').insert({
+        order_id: orderId, status,
+        note: 'Entrega local (DiDi / asociado VIP): solicita el reparto desde la app DiDi o asigna un asociado y captura el rastreo en el panel.',
+        visible_to_customer: false,
+      });
+      return { ok: true, local: true };
     }
 
     const addr = (ord.shipping_address ?? {}) as Record<string, any>;

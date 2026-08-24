@@ -21,7 +21,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/cors.ts';
 import {
   autoLabelOrder, CLIENT_ID, CLIENT_SECRET, createLabel, DEFAULT_BOX,
-  quoteForAddress, saveLabelToOrder, toAddress,
+  LOCAL_RATE_ID, localRateFor, quoteForAddress, saveLabelToOrder, toAddress,
 } from '../_shared/skydropx.ts';
 
 const admin = createClient(
@@ -72,10 +72,16 @@ Deno.serve(async (req) => {
         return json({ error: 'Falta el código postal de destino', rates: [] }, 400);
       }
 
+      // Entrega local Ensenada (DiDi / asociado VIP): tarifa sintética que se
+      // antepone a las de paquetería y se persiste igual que ellas, así
+      // create_order la cobra y registra sin ningún caso especial.
+      const local = await localRateFor(admin, dest.postal_code);
       const q = await quoteForAddress(dest, box);
-      if (q.error) return json({ error: 'Skydropx', detail: q.error, rates: [] }, 502);
 
-      const rates = q.rates;
+      // Un CP local nunca se queda sin opción por una caída de Skydropx.
+      if (q.error && !local) return json({ error: 'Skydropx', detail: q.error, rates: [] }, 502);
+
+      const rates = local ? [local, ...q.rates] : q.rates;
       const best = rates[0];
 
       if (order_id && best) {
@@ -129,6 +135,11 @@ Deno.serve(async (req) => {
         return json({ error: 'Solo staff puede generar guías' }, 403);
       }
       if (!rate_id) return json({ error: 'Falta rate_id' }, 400);
+      if (String(rate_id) === LOCAL_RATE_ID) {
+        return json({
+          error: 'Entrega local: no lleva guía de paquetería. Solicita el reparto por DiDi o asígnalo a un asociado y captura el rastreo manualmente.',
+        }, 400);
+      }
 
       const result = await createLabel({
         quotationId: quotation_id ?? null,

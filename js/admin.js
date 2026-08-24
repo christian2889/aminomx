@@ -462,6 +462,10 @@ async function openOrder(id) {
             <div class="field span-2"><label>URL de rastreo</label>
               <input class="input" id="shUrl" value="${esc(ship?.tracking_url ?? '')}" placeholder="https://…"></div>
           </div>
+          ${ship?.skydropx_rate_id === 'local-didi' ? `<p class="help" style="margin-top:12px">
+            🛵 <strong>Entrega local (DiDi / asociado VIP):</strong> solicita el reparto desde la
+            app DiDi o asígnalo a un asociado. El cliente quedó instruido a escribir por WhatsApp
+            tras su pago; captura aquí repartidor y rastreo si aplica. No lleva guía Skydropx.</p>` : ''}
           ${ship?.label_url ? `<p class="help" style="margin-top:12px">
             <a class="btn btn-outline btn-sm" href="${esc(ship.label_url)}" target="_blank" rel="noopener">
               ${icon('external')} Descargar guía</a></p>` : ''}

@@ -195,7 +195,7 @@ function readCart() {
   }
 
   function tarifaHTML(r, checked) {
-    const precio = envio.gratis ? 'Gratis' : mxn(r.cost_cents);
+    const precio = (envio.gratis || !r.cost_cents) ? 'Gratis' : mxn(r.cost_cents);
     return `<label class="pay-opt" style="align-items:center">
       <input type="radio" name="rate" value="${esc(String(r.id))}" ${checked ? 'checked' : ''}>
       <span style="display:flex;justify-content:space-between;gap:12px;width:100%;align-items:center">
@@ -220,7 +220,14 @@ function readCart() {
         neighborhood: $('#fLine2').value.trim(),
       });
       if (seq !== quoteSeq) return; // llegó tarde: el CP ya cambió
-      const rates = (data.rates ?? []).slice(0, 5);
+      const todas = data.rates ?? [];
+      // Entrega local Ensenada: solo aparece si el pedido alcanza su mínimo
+      // ($2,000). El servidor lo vuelve a validar al crear el pedido.
+      const rates = todas
+        .filter((r) => !r.min_subtotal_cents || subtotal >= r.min_subtotal_cents)
+        .slice(0, 5);
+      const localFuera = todas.find((r) =>
+        r.local && r.min_subtotal_cents && subtotal < r.min_subtotal_cents);
       if (!rates.length) throw new Error('sin tarifas');
 
       envio.quoteId = data.quote_id ?? null;
@@ -229,6 +236,13 @@ function readCart() {
 
       box.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
         ${rates.map((r, i) => tarifaHTML(r, i === 0)).join('')}
+        ${rates.some((r) => r.local) ? `<p class="help">🛵 Entrega local en Ensenada por DiDi o
+          asociado Aminos MX VIP: después de pagar, escríbenos por
+          <a href="https://wa.me/526461164390" target="_blank" rel="noopener">WhatsApp</a>
+          para coordinar tu entrega el mismo día.</p>` : ''}
+        ${localFuera ? `<p class="help">🛵 En Ensenada tu entrega local es gratis en pedidos
+          desde ${mxn(localFuera.min_subtotal_cents)} — te faltan
+          ${mxn(localFuera.min_subtotal_cents - subtotal)}.</p>` : ''}
         ${envio.gratis ? '<p class="help">Tu pedido supera $3,500: el envío corre por nuestra cuenta 🎉</p>' : ''}
       </div>`;
       pintaResumen();
