@@ -185,7 +185,7 @@ async function renderSpei(order) {
       <div class="panel"><div class="panel-head"><h2>4 · Forma de pago</h2></div>
         <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
           <label class="pay-opt"><input type="radio" name="pay" value="stripe" checked>
-            <span><b>Pago en línea · tarjeta u OXXO</b>
+            <span><b>Pago en línea · Tarjeta u OXXO</b>
             <span>Pago seguro con Stripe: Visa, Mastercard, AMEX o ficha para pagar en OXXO.</span></span></label>
           <label class="pay-opt"><input type="radio" name="pay" value="spei">
             <span><b>Transferencia SPEI</b><span>Te mostramos la CLABE al confirmar y te la enviamos por correo. Validamos el mismo día hábil.</span></span></label>
