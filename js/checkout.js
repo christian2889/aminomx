@@ -272,34 +272,60 @@ function readCart() {
 
   /* ------------ Autocompletado de calle con Google Places (opcional) ------
      Se enciende solo si AMX_CONFIG.GOOGLE_MAPS_KEY tiene valor (llave
-     restringida por dominio; pública por diseño). Al elegir una dirección se
-     llenan calle, colonia, ciudad, estado y CP, y se recotiza el envío.
-     Sin llave, el CP inteligente de arriba trabaja solo. */
+     restringida por dominio; pública por diseño). Usa el widget nuevo
+     PlaceAutocompleteElement — el único disponible en llaves recientes de
+     Google Cloud (Places API New) — que sustituye visualmente al campo de
+     calle; el input original queda oculto como fuente de verdad del form.
+     Al elegir una sugerencia se llenan calle, colonia, ciudad, estado y CP,
+     y se recotiza el envío. Sin llave, el CP inteligente trabaja solo. */
   const gmKey = (window.AMX_CONFIG || {}).GOOGLE_MAPS_KEY;
   if (gmKey) {
     window.__amxGmaps = async () => {
+      const line1 = $('#fLine1');
       try {
-        const { Autocomplete } = await google.maps.importLibrary('places');
-        const ac = new Autocomplete($('#fLine1'), {
-          componentRestrictions: { country: 'mx' },
-          fields: ['address_components'],
-          types: ['address'],
+        const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+        const ac = new PlaceAutocompleteElement({ includedRegionCodes: ['mx'] });
+        ac.style.width = '100%';
+        // El widget respeta color-scheme: que siga al tema del sitio.
+        ac.style.colorScheme =
+          document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        line1.hidden = true;
+        line1.parentElement.insertBefore(ac, line1);
+
+        // Con dirección guardada, que se vea cuál está activa mientras el
+        // buscador esté vacío.
+        let actual = null;
+        if (line1.value.trim()) {
+          actual = document.createElement('p');
+          actual.className = 'help';
+          actual.textContent = `Usando: ${line1.value} — escribe arriba para cambiarla`;
+          line1.parentElement.insertBefore(actual, line1);
+        }
+
+        ac.addEventListener('gmp-select', async ({ placePrediction }) => {
+          try {
+            const place = placePrediction.toPlace();
+            await place.fetchFields({ fields: ['addressComponents'] });
+            const comps = place.addressComponents ?? [];
+            const get = (t) => comps.find((c) => (c.types ?? []).includes(t))?.longText ?? '';
+            const calle = get('route'), num = get('street_number');
+            if (calle) line1.value = num ? `${calle} ${num}` : calle;
+            const col = get('sublocality_level_1') || get('sublocality') || get('neighborhood');
+            if (col) $('#fLine2').value = col;
+            const ciudad = get('locality') || get('municipality');
+            if (ciudad) $('#fCity').value = ciudad;
+            const edo = get('administrative_area_level_1');
+            if (edo) $('#fState').value = edo;
+            const cp = get('postal_code');
+            if (cp) { $('#fZip').value = cp; autocompletaCP(); cotizar(); }
+            if (actual) { actual.remove(); actual = null; }
+          } catch (e) { console.warn('No se pudo leer la dirección elegida', e); }
         });
-        ac.addListener('place_changed', () => {
-          const comps = ac.getPlace()?.address_components ?? [];
-          const get = (t) => comps.find((c) => c.types.includes(t))?.long_name ?? '';
-          const calle = get('route'), num = get('street_number');
-          if (calle) $('#fLine1').value = num ? `${calle} ${num}` : calle;
-          const col = get('sublocality') || get('sublocality_level_1') || get('neighborhood');
-          if (col) $('#fLine2').value = col;
-          const ciudad = get('locality') || get('municipality');
-          if (ciudad) $('#fCity').value = ciudad;
-          const edo = get('administrative_area_level_1');
-          if (edo) $('#fState').value = edo;
-          const cp = get('postal_code');
-          if (cp) { $('#fZip').value = cp; autocompletaCP(); cotizar(); }
-        });
-      } catch (e) { console.warn('Google Places no disponible', e); }
+      } catch (e) {
+        // Sin Places (llave sin permisos, sin red…): el campo normal regresa.
+        line1.hidden = false;
+        console.warn('Google Places no disponible; captura manual', e);
+      }
     };
     const s = document.createElement('script');
     s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(gmKey) +

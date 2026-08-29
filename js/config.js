@@ -11,5 +11,5 @@ window.AMX_CONFIG = {
   // Autocompletado de calle en el checkout (Google Places). Déjala vacía y el
   // checkout usa solo el CP inteligente (SEPOMEX). La llave se restringe por
   // dominio en Google Cloud, por eso puede vivir aquí.
-  GOOGLE_MAPS_KEY: "",
+  GOOGLE_MAPS_KEY: "AIzaSyBiy2c_TDP6PYLs71Xa4g-iq1_qAV9NzTA",
 };
