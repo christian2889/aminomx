@@ -195,6 +195,17 @@ hours_to_pay }`) — se editan sin tocar código ni redesplegar.
 - La tienda **no emite factura**: el checkout ya no pide datos fiscales
   (términos §5 y aviso de privacidad actualizados).
 
+## Catálogo: un producto por compuesto
+
+- Las presentaciones (5/15/20 mg…) del mismo compuesto se **agrupan por
+  nombre** en la tienda: una sola tarjeta con selector de concentración, y en
+  la ficha un selector que navega entre variantes. Los relacionados no repiten
+  compuesto.
+- En la base **cada presentación sigue siendo su propia fila** en `products`
+  (precio, stock y SKU independientes): el panel de admin, el carrito y los
+  pedidos no cambian. Para que dos filas se agrupen basta que compartan
+  `name` y categoría exactos; para separarlas, usa nombres distintos.
+
 ## Base de datos (resumen)
 
 - `products` + `product_images` (Storage `product-images`, subida desde el panel)

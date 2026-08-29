@@ -119,13 +119,18 @@ function renderSpec(p, batch) {
 async function renderRelated(p) {
   const box = $('[data-pdp-related]');
   if (!box) return;
+  // .neq('name', …): las otras concentraciones del mismo compuesto ya están
+  // en el selector de la ficha; aquí solo van compuestos distintos.
   const { data } = await supabase.from('products')
     .select('slug, name, price_cents, coming_soon, product_images(url, position)')
     .eq('status', 'active').eq('category_id', p.category_id)
-    .neq('id', p.id).limit(8);
+    .neq('name', p.name).limit(8);
   // Lo comprable primero: no tiene caso rematar la ficha con cuatro
-  // "próximamente" cuando hay algo que sí se puede llevar hoy.
+  // "próximamente" cuando hay algo que sí se puede llevar hoy. Un compuesto
+  // aparece una sola vez aunque tenga varias concentraciones.
+  const seen = {};
   const list = (data ?? [])
+    .filter((r) => (seen[r.name] ? false : (seen[r.name] = true)))
     .sort((a, b) => (a.coming_soon ? 1 : 0) - (b.coming_soon ? 1 : 0))
     .slice(0, 4);
   if (!list.length) { box.closest('section')?.remove(); return; }
@@ -201,6 +206,23 @@ async function renderRelated(p) {
 
   // El botón usa el slug: main.js lo añade al carrito
   $('[data-add-pdp]').setAttribute('data-add-pdp', p.slug);
+
+  // Variantes: el mismo compuesto en otras concentraciones se elige aquí
+  // mismo (cada una es su propia fila con precio y stock, así que el cambio
+  // navega a la ficha de esa variante).
+  const { data: sibs } = await supabase.from('products')
+    .select('slug, presentation_es, presentation_en, stock, coming_soon')
+    .eq('status', 'active').eq('name', p.name).eq('category_id', p.category_id)
+    .order('price_cents');
+  const sizesBox = $('.pdp-sizes');
+  if (sizesBox && (sibs?.length ?? 0) > 1) {
+    const doseOf = (v) => (((lang() === 'en' ? v.presentation_en : v.presentation_es) || '')
+      .replace(/^\s*vial\s+\S+\s+/i, ''));
+    sizesBox.innerHTML = sibs.map((v) => v.slug === p.slug
+      ? `<span class="size active">${esc(doseOf(v))}</span>`
+      : `<a class="size${v.stock <= 0 && !v.coming_soon ? ' out' : ''}" href="/producto?p=${encodeURIComponent(v.slug)}">${esc(doseOf(v))}</a>`
+    ).join('');
+  }
 
   renderGallery(p);
   renderSpec(p, batch);

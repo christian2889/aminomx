@@ -263,6 +263,12 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 .pcard:hover .pcard-name { color:hsl(var(--primary)); }
 .pcard-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
 .ptag { border-radius:6px; background:hsl(var(--secondary)); color:hsl(var(--muted-fg)); font-size:.68rem; padding:3px 8px; }
+/* Selector de concentración: variantes del mismo compuesto en una tarjeta */
+.pcard-doses { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.pcard-doses .dose { font:inherit; font-size:.75rem; font-weight:700; padding:4px 11px; border-radius:999px; border:1px solid hsl(var(--border)); background:hsl(var(--secondary) / .3); color:hsl(var(--muted-fg)); cursor:pointer; transition:border-color .15s, color .15s, background .15s; }
+.pcard-doses .dose:hover { border-color:hsl(var(--primary) / .6); color:hsl(var(--fg)); }
+.pcard-doses .dose.active { border-color:hsl(var(--primary)); background:hsl(var(--primary) / .12); color:hsl(var(--primary)); }
+.pcard-doses .dose.out { opacity:.45; text-decoration:line-through; }
 .pcard-foot { margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between; padding-top:16px; gap:10px; }
 .pcard-price .compare { font-size:.72rem; color:hsl(var(--muted-fg)); text-decoration:line-through; }
 .pcard-price .amt { font-size:1.25rem; font-weight:800; }
@@ -451,8 +457,10 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 .pdp-price .iva { font-size:.8rem; color:hsl(var(--muted-fg)); }
 .pdp-label { margin-top:24px; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
 .pdp-sizes { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
-.size { border:1px solid hsl(var(--border)); background:hsl(var(--secondary) / .3); color:hsl(var(--muted-fg)); border-radius:calc(var(--radius) - 2px); padding:12px 16px; font-weight:600; font-size:.9rem; }
+.size { border:1px solid hsl(var(--border)); background:hsl(var(--secondary) / .3); color:hsl(var(--muted-fg)); border-radius:calc(var(--radius) - 2px); padding:12px 16px; font-weight:600; font-size:.9rem; text-decoration:none; transition:border-color .15s, color .15s; }
+a.size:hover { border-color:hsl(var(--primary) / .6); color:hsl(var(--fg)); }
 .size.active { border:2px solid hsl(var(--primary)); color:hsl(var(--fg)); }
+.size.out { opacity:.5; text-decoration:line-through; }
 .pdp-buy { display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
 .stepper { display:flex; align-items:center; border:1px solid hsl(var(--border)); border-radius:calc(var(--radius) - 2px); }
 .stepper button { width:44px; height:50px; display:grid; place-items:center; color:hsl(var(--fg)); }

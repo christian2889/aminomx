@@ -125,9 +125,26 @@
 
   var PRODUCTS = FALLBACK_PRODUCTS;
   var byId = {};
+  // Un producto por sustancia: las presentaciones (5/15/20 mg…) son variantes
+  // del mismo compuesto y se agrupan por nombre. Cada variante conserva su
+  // fila propia (precio, stock, SKU), así que carrito y pedidos no cambian.
+  var FAMILIES = [];
   function reindex() {
-    byId = {};
-    PRODUCTS.forEach(function (p) { byId[p.id] = p; });
+    byId = {}; FAMILIES = [];
+    var map = {};
+    PRODUCTS.forEach(function (p) {
+      byId[p.id] = p;
+      var k = p.name + "||" + p.category;
+      if (!map[k]) { map[k] = { name: p.name, category: p.category, variants: [] }; FAMILIES.push(map[k]); }
+      map[k].variants.push(p);
+    });
+    FAMILIES.forEach(function (f) {
+      f.variants.sort(function (a, b) { return a.price - b.price; });
+      f.key = f.variants[0].id;
+      f.bestseller = f.variants.some(function (v) { return v.bestseller; });
+      f.isNew = f.variants.some(function (v) { return v.isNew; });
+      f.comingSoon = f.variants.every(function (v) { return v.comingSoon; });
+    });
   }
   reindex();
 
@@ -174,7 +191,8 @@
     lang: (LS && LS.getItem("amx_lang")) || "es",
     cat: "todos",
     q: "",
-    cart: []
+    cart: [],
+    sel: {}   // concentración elegida por familia (key → id de la variante)
   };
   try { state.cart = JSON.parse(LS.getItem("amx_cart")) || []; } catch (e) { state.cart = []; }
 
@@ -220,7 +238,7 @@
   // Una categoría sin productos no se muestra (ni tarjeta ni filtro): el
   // catálogo cambia por temporada y las vacías solo llevarían a un grid vacío.
   function catCount(id) {
-    return PRODUCTS.filter(function (p) { return p.category === id; }).length;
+    return FAMILIES.filter(function (f) { return f.category === id; }).length;
   }
   function renderCats() {
     var box = $("[data-cats]"); if (!box) return;
@@ -244,19 +262,36 @@
   /* -------------------- Grid -------------------- */
   function filtered() {
     var q = state.q.trim().toLowerCase();
-    return PRODUCTS.filter(function (p) {
-      var mc = state.cat === "todos" || p.category === state.cat;
-      var tags = p.tagsEs.concat(p.tagsEn).join(" ").toLowerCase();
-      var mq = !q || p.name.toLowerCase().indexOf(q) >= 0 || tags.indexOf(q) >= 0 ||
-        (T(p.descEs, p.descEn)).toLowerCase().indexOf(q) >= 0;
-      return mc && mq;
+    return FAMILIES.filter(function (f) {
+      if (state.cat !== "todos" && f.category !== state.cat) return false;
+      if (!q) return true;
+      return f.variants.some(function (p) {
+        var tags = p.tagsEs.concat(p.tagsEn).join(" ").toLowerCase();
+        return p.name.toLowerCase().indexOf(q) >= 0 || tags.indexOf(q) >= 0 ||
+          (T(p.descEs, p.descEn)).toLowerCase().indexOf(q) >= 0;
+      });
     }).sort(function (a, b) {
       // Lo que se puede comprar va primero; lo demás conserva su orden.
       return (a.comingSoon ? 1 : 0) - (b.comingSoon ? 1 : 0);
     });
   }
 
-  function productCard(p) {
+  // Variante que muestra la tarjeta: la que eligió el usuario o, por
+  // defecto, la más barata con existencias.
+  function famSel(f) {
+    var v = null, id = state.sel[f.key];
+    if (id) v = f.variants.filter(function (x) { return x.id === id; })[0];
+    if (!v) v = f.variants.filter(function (x) { return x.stock > 0 && !x.comingSoon; })[0] || f.variants[0];
+    return v;
+  }
+  // "Vial liofilizado 5 mg" → "5 mg": etiqueta corta para el selector.
+  function doseLabel(p) {
+    var s = T(p.presEs, p.presEn) || "";
+    return s.replace(/^\s*vial\s+\S+\s+/i, "") || s;
+  }
+
+  function productCard(f) {
+    var p = famSel(f);
     var tags = (state.lang === "en" ? p.tagsEn : p.tagsEs).slice(0, 3).map(function (t) {
       return '<span class="ptag">' + esc(t) + "</span>";
     }).join("");
@@ -264,8 +299,16 @@
     var badges = "";
     if (soon) badges += '<span class="badge badge-soon">' + icon("i-timer") + T("Próximamente", "Coming soon") + "</span>";
     else {
-      if (p.bestseller) badges += '<span class="badge badge-amber">' + icon("i-flame") + T("Más vendido", "Best seller") + "</span>";
-      if (p.isNew) badges += '<span class="badge badge-sky">' + icon("i-sparkles") + T("Nuevo", "New") + "</span>";
+      if (f.bestseller) badges += '<span class="badge badge-amber">' + icon("i-flame") + T("Más vendido", "Best seller") + "</span>";
+      if (f.isNew) badges += '<span class="badge badge-sky">' + icon("i-sparkles") + T("Nuevo", "New") + "</span>";
+    }
+    var doses = "";
+    if (f.variants.length > 1) {
+      doses = '<div class="pcard-doses">' + f.variants.map(function (v) {
+        return '<button class="dose' + (v.id === p.id ? " active" : "") +
+          (v.stock <= 0 && !v.comingSoon ? " out" : "") +
+          '" data-dose="' + v.id + '" data-fam="' + f.key + '">' + esc(doseLabel(v)) + "</button>";
+      }).join("") + "</div>";
     }
     var bg = "linear-gradient(135deg, hsl(215 40% " + (10 + hashHue(p.id)) + "%) 0%, hsl(199 60% 12%) 100%)";
     var low = p.stock <= 10;
@@ -274,7 +317,7 @@
       : low
         ? '<span class="pcard-stock low">' + icon("i-package") + T("¡Últimas " + p.stock + " piezas!", "Only " + p.stock + " left!") + "</span>"
         : '<span class="pcard-stock">' + icon("i-package") + p.stock + " " + T("piezas disponibles", "in stock") + "</span>";
-    return '<article class="pcard' + (soon ? " is-soon" : "") + '" data-card="' + p.id + '">' +
+    return '<article class="pcard' + (soon ? " is-soon" : "") + '" data-card="' + f.key + '">' +
       '<button class="pcard-media" data-view="' + p.id + '" aria-label="' + esc(p.name) + '">' +
         '<span class="bgfill" style="background:' + bg + '"></span>' +
         '<span class="molecule-bg"></span>' +
@@ -287,6 +330,7 @@
       '<div class="pcard-body">' +
         '<p class="pcard-kicker">' + esc(catLabel(p.category)) + " · " + esc(T(p.presEs, p.presEn)) + "</p>" +
         '<a class="pcard-name" href="/producto?p=' + encodeURIComponent(p.id) + '">' + esc(p.name) + "</a>" +
+        doses +
         '<div class="pcard-tags">' + tags + "</div>" +
         '<div class="pcard-foot">' +
           '<div class="pcard-price">' +
@@ -443,6 +487,19 @@
   /* -------------------- Eventos -------------------- */
   document.addEventListener("click", function (e) {
     var t = e.target;
+    var dose = t.closest("[data-dose]");
+    if (dose) {
+      var famK = dose.getAttribute("data-fam");
+      state.sel[famK] = dose.getAttribute("data-dose");
+      var fam = FAMILIES.filter(function (f) { return f.key === famK; })[0];
+      var cardEl = dose.closest(".pcard");
+      if (fam && cardEl) {
+        var tmp = document.createElement("div");
+        tmp.innerHTML = productCard(fam);
+        cardEl.replaceWith(tmp.firstElementChild);
+      }
+      return;
+    }
     var add = t.closest("[data-add]"); if (add) { addToCart(add.getAttribute("data-add")); return; }
     var view = t.closest("[data-view]"); if (view) { openModal(view.getAttribute("data-view")); return; }
     var addM = t.closest("[data-add-modal]"); if (addM) { addToCart(addM.getAttribute("data-add-modal")); closeModal(); openCart(); return; }
