@@ -1,8 +1,10 @@
 // ============================================================================
 // send-email — correos transaccionales vía Resend
 // Secrets: RESEND_API_KEY, FROM_EMAIL, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-// Body: { template: 'order_confirmation'|'order_shipped'|'order_delivered',
-//         order_id: uuid }
+// Body: { template: 'order_confirmation'|'order_shipped'|'order_delivered'
+//                 |'spei_instructions', order_id: uuid }
+// Los datos bancarios de spei_instructions viven en settings.bank_transfer
+// (editables sin redesplegar).
 // ============================================================================
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { corsHeaders, json } from '../_shared/cors.ts';
@@ -48,7 +50,52 @@ function itemsTable(items: any[]) {
   </table>`;
 }
 
+// Los pagos SPEI se validan a mano: el correo lleva CLABE, referencia y a
+// dónde mandar el comprobante. `o.bank` viene de settings.bank_transfer.
+function speiHTML(o: any) {
+  const b = o.bank ?? {};
+  const fila = (k: string, v: string, mono = false) => `
+    <tr>
+      <td style="padding:9px 0;border-bottom:1px solid #253244;color:#8ba1ad;font-size:13px">${k}</td>
+      <td style="padding:9px 0;border-bottom:1px solid #253244;text-align:right;font-weight:700${
+        mono ? ';font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em' : ''}">${v}</td>
+    </tr>`;
+  return layout('Completa tu pago por transferencia', `
+    <p style="color:#c9d7de;line-height:1.7">Tu pedido <strong style="color:#14d3c4">${o.order_number}</strong>
+    quedó apartado. Realiza la transferencia SPEI por el monto exacto y envíanos tu comprobante;
+    en cuanto lo validemos preparamos tu envío.</p>
+
+    <div style="background:#0d151d;border:1px solid #253244;border-radius:12px;padding:18px;margin:18px 0">
+      <div style="font-size:11px;letter-spacing:.18em;color:#8ba1ad;margin-bottom:6px">MONTO A TRANSFERIR</div>
+      <div style="font-size:28px;font-weight:800;color:#14d3c4">${mxn(o.total_cents)}</div>
+    </div>
+
+    <table role="presentation" width="100%" style="border-collapse:collapse;font-size:14px">
+      ${fila('Banco', b.bank ?? 'BBVA')}
+      ${fila('Beneficiario', b.beneficiary ?? '')}
+      ${fila('CLABE', b.clabe ?? '', true)}
+      ${fila('Cuenta', b.account ?? '', true)}
+      ${fila('Referencia / concepto', o.order_number, true)}
+    </table>
+
+    <p style="color:#c9d7de;line-height:1.7;margin-top:20px"><strong>Envía tu comprobante</strong> por
+      WhatsApp al <a href="https://wa.me/${String(b.whatsapp ?? '').replace(/\D/g, '')}"
+        style="color:#14d3c4">${b.whatsapp ?? ''}</a>
+      o al correo <a href="mailto:${b.email ?? ''}" style="color:#14d3c4">${b.email ?? ''}</a>,
+      indicando tu número de pedido.</p>
+
+    ${itemsTable(o.order_items ?? [])}
+    <p style="font-size:16px"><strong>Total: ${mxn(o.total_cents)}</strong></p>
+    <p style="color:#8ba1ad;font-size:13px;line-height:1.6">Apartamos tu pedido
+      ${b.hours_to_pay ?? 48} horas. Si no recibimos el pago en ese plazo, las piezas
+      vuelven al catálogo y tendrás que hacer el pedido de nuevo.</p>`);
+}
+
 const TEMPLATES: Record<string, (o: any) => { subject: string; html: string }> = {
+  spei_instructions: (o) => ({
+    subject: `Datos para tu transferencia · Pedido ${o.order_number} · Aminos MX`,
+    html: speiHTML(o),
+  }),
   order_confirmation: (o) => ({
     subject: `Pedido ${o.order_number} confirmado · Aminos MX`,
     html: layout('¡Gracias por tu pedido!', `
@@ -89,7 +136,18 @@ Deno.serve(async (req) => {
       .single();
     if (error || !order) return json({ error: 'Pedido no encontrado' }, 404);
 
-    const payload = { ...order, shipment: order.shipments?.[0] };
+    // Datos bancarios para las instrucciones SPEI (editables en settings).
+    let bank: Record<string, unknown> | null = null;
+    if (template === 'spei_instructions') {
+      const { data: s } = await admin.from('settings')
+        .select('value').eq('key', 'bank_transfer').maybeSingle();
+      bank = (s?.value ?? null) as Record<string, unknown> | null;
+      if (!bank || bank.enabled !== true) {
+        return json({ error: 'Transferencia bancaria sin configurar (settings.bank_transfer)' }, 501);
+      }
+    }
+
+    const payload = { ...order, shipment: order.shipments?.[0], bank };
     const { subject, html } = build(payload);
 
     if (!RESEND_API_KEY) {

@@ -23,6 +23,80 @@ function readCart() {
   try { return JSON.parse(localStorage.getItem('amx_cart')) || []; } catch { return []; }
 }
 
+/* Pantalla de instrucciones de transferencia SPEI. Los pagos por
+   transferencia no pasan por Stripe: el cliente transfiere, manda comprobante
+   y el admin marca el pago recibido en el panel (eso dispara la guía). Los
+   datos bancarios se leen de settings.bank_transfer, nunca se escriben aquí. */
+async function renderSpei(order) {
+  const { data: s } = await supabase.from('settings')
+    .select('value').eq('key', 'bank_transfer').maybeSingle();
+  const b = s?.value ?? {};
+  const wa = String(b.whatsapp ?? '').replace(/\D/g, '');
+
+  const dato = (label, valor, copiable = true) => `
+    <div class="sum-row" style="align-items:center;gap:12px">
+      <span>${esc(label)}</span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <b class="mono" style="letter-spacing:.04em">${esc(valor)}</b>
+        ${copiable ? `<button class="btn btn-ghost btn-sm" data-copy="${esc(valor)}"
+          aria-label="Copiar ${esc(label)}">Copiar</button>` : ''}
+      </span>
+    </div>`;
+
+  $('#coBody').innerHTML = `
+    <div class="panel" style="max-width:640px;margin:0 auto">
+      <div class="panel-head"><h2>Pedido ${esc(order.order_number)} · listo para pagar</h2></div>
+      <div class="panel-body">
+        <p class="help" style="margin-bottom:18px">Apartamos tus piezas. Transfiere el monto exacto
+          por SPEI desde tu banca en línea y envíanos el comprobante: validamos y preparamos tu envío.</p>
+
+        <div style="background:hsl(var(--surface) / var(--surface-a));border:1px solid hsl(var(--border));
+                    border-radius:var(--radius);padding:18px;margin-bottom:18px">
+          <div class="help" style="letter-spacing:.16em;font-size:.7rem">MONTO A TRANSFERIR</div>
+          <div style="font-size:1.9rem;font-weight:800;color:hsl(var(--primary));margin-top:4px">
+            ${mxn(order.total_cents)}</div>
+        </div>
+
+        ${dato('Banco', b.bank ?? 'BBVA', false)}
+        ${dato('Beneficiario', b.beneficiary ?? '', false)}
+        ${dato('CLABE', b.clabe ?? '')}
+        ${dato('Cuenta', b.account ?? '')}
+        ${dato('Referencia / concepto', order.order_number)}
+
+        <p class="help" style="margin-top:18px"><strong>Envía tu comprobante</strong> indicando tu
+          número de pedido:</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          ${wa ? `<a class="btn btn-primary" target="_blank" rel="noopener"
+            href="https://wa.me/${wa}?text=${encodeURIComponent(
+              `Hola, adjunto mi comprobante de pago del pedido ${order.order_number}`)}">
+            WhatsApp ${esc(b.whatsapp ?? '')}</a>` : ''}
+          ${b.email ? `<a class="btn btn-outline" href="mailto:${esc(b.email)}?subject=${
+            encodeURIComponent(`Comprobante de pago · ${order.order_number}`)}">${esc(b.email)}</a>` : ''}
+        </div>
+
+        <p class="help" style="margin-top:18px">También te enviamos estos datos por correo.
+          Apartamos tu pedido ${esc(String(b.hours_to_pay ?? 48))} horas.</p>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:22px">
+          <a class="btn btn-outline" href="/cuenta?pedido=${encodeURIComponent(order.order_number)}#pedidos">
+            Ver mi pedido</a>
+          <a class="btn btn-ghost" href="/#catalogo">Seguir viendo productos</a>
+        </div>
+      </div>
+    </div>`;
+
+  $('#coBody').addEventListener('click', async (ev) => {
+    const b2 = ev.target.closest('[data-copy]');
+    if (!b2) return;
+    try {
+      await navigator.clipboard.writeText(b2.dataset.copy);
+      const antes = b2.textContent;
+      b2.textContent = 'Copiado';
+      setTimeout(() => { b2.textContent = antes; }, 1600);
+    } catch { toast('Copia el dato manualmente', 'err'); }
+  });
+}
+
 (async function boot() {
   injectIcons();
   const cart = readCart();
@@ -114,7 +188,7 @@ function readCart() {
             <span><b>Pago en línea · tarjeta u OXXO</b>
             <span>Pago seguro con Stripe: Visa, Mastercard, AMEX o ficha para pagar en OXXO.</span></span></label>
           <label class="pay-opt"><input type="radio" name="pay" value="spei">
-            <span><b>Transferencia SPEI</b><span>Te enviamos la CLABE al confirmar. Validación el mismo día hábil.</span></span></label>
+            <span><b>Transferencia SPEI</b><span>Te mostramos la CLABE al confirmar y te la enviamos por correo. Validamos el mismo día hábil.</span></span></label>
           <label class="pay-opt"><input type="radio" name="pay" value="whatsapp">
             <span><b>Coordinar por WhatsApp</b><span>Te contactamos para acordar la forma de pago.</span></span></label>
         </div></div>
@@ -370,12 +444,23 @@ function readCart() {
         full_name: address.recipient, phone: address.phone,
       }).eq('id', session.user.id);
 
-      // Correo de confirmación (no bloqueante)
+      // Correo de confirmación (no bloqueante). En SPEI el correo lleva los
+      // datos bancarios, así que sustituye a la confirmación genérica.
       supabase.functions.invoke('send-email', {
-        body: { template: 'order_confirmation', order_id: result.order_id },
+        body: {
+          template: pay === 'spei' ? 'spei_instructions' : 'order_confirmation',
+          order_id: result.order_id,
+        },
       }).catch(() => {});
 
       localStorage.setItem('amx_cart', '[]');
+
+      // Transferencia: mostramos aquí mismo CLABE, monto y referencia — el
+      // cliente no debería tener que buscar el correo para poder pagar.
+      if (pay === 'spei') {
+        renderSpei(result);
+        return;
+      }
 
       // Pago en línea: redirigir a Stripe Checkout
       if (pay === 'stripe') {

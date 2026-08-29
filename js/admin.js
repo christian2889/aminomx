@@ -481,11 +481,64 @@ async function openOrder(id) {
             .map((ev) => `<li class="done"><div class="t-title">${esc(ESTADO_PEDIDO[ev.status] ?? ev.status)}</div>
               <div class="t-meta">${esc(ev.note ?? '')} · ${fechaHoraMX(ev.created_at)}</div></li>`).join('')
           || '<li class="done"><div class="t-title">Pedido creado</div></li>'}</ul></div></div>`,
-      `${o.payment_status !== 'paid'
+      `${o.payment_status !== 'paid' && o.payment_method === 'spei'
+          ? `<button class="btn btn-primary" id="speiPaidBtn">${icon('check')} Confirmar pago recibido</button>` : ''}
+       ${o.payment_status !== 'paid'
           ? `<button class="btn btn-outline" id="payLinkBtn">${icon('external')} Liga de pago</button>` : ''}
+       ${o.payment_status !== 'paid' && o.payment_method === 'spei'
+          ? `<button class="btn btn-outline" id="speiMailBtn">${icon('mail')} Reenviar datos SPEI</button>` : ''}
        <button class="btn btn-outline" id="mailBtn">${icon('mail')} Enviar correo</button>
        <button class="btn btn-outline" data-close-sheet>Cerrar</button>
        <button class="btn btn-primary" id="saveOrder">Guardar cambios</button>`);
+
+    // Transferencia SPEI: el pago se valida a mano. Al confirmarlo, el pedido
+    // avanza a pagado y se dispara la guía igual que en un pago con tarjeta.
+    $('#speiPaidBtn')?.addEventListener('click', async () => {
+      if (!confirm(`¿Confirmas que recibiste la transferencia de ${mxn(o.total_cents)} `
+        + `del pedido ${o.order_number}? Se marcará como pagado y se generará la guía.`)) return;
+      const btn = $('#speiPaidBtn');
+      btn.disabled = true; btn.textContent = 'Confirmando…';
+      try {
+        await updateOrder(o.id, {
+          payment_status: 'paid',
+          paid_at: new Date().toISOString(),
+          ...(o.status === 'pending' ? { status: 'paid' } : {}),
+        });
+        await supabase.from('order_events').insert({
+          order_id: o.id, status: o.status === 'pending' ? 'paid' : o.status,
+          note: 'Pago por transferencia SPEI confirmado',
+        });
+
+        // Guía automática (o instrucciones de entrega local): no bloquea.
+        const { data, error } = await supabase.functions.invoke('skydropx-rates', {
+          body: { action: 'auto_label', order_id: o.id },
+        });
+        if (error || data?.ok === false) {
+          toast('Pago confirmado. La guía no salió sola: genérala abajo con "Cotizar Skydropx".', 'err');
+        } else if (data?.local) {
+          toast('Pago confirmado. Entrega local: coordina el reparto por DiDi o asociado.');
+        } else {
+          toast(`Pago confirmado y guía generada${data?.tracking_number ? ` · ${data.tracking_number}` : ''}`);
+        }
+        supabase.functions.invoke('send-email', {
+          body: { template: 'order_confirmation', order_id: o.id },
+        }).catch(() => {});
+        setTimeout(() => openOrder(o.id), 1200);
+      } catch (e) {
+        btn.disabled = false; btn.textContent = 'Confirmar pago recibido';
+        fail(e);
+      }
+    });
+
+    $('#speiMailBtn')?.addEventListener('click', async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('send-email', {
+          body: { template: 'spei_instructions', order_id: o.id },
+        });
+        if (error || data?.error) throw new Error(data?.error ?? 'No se pudo enviar');
+        toast(data?.skipped ? 'Resend no está configurado' : 'Datos de transferencia reenviados');
+      } catch (e) { fail(e); }
+    });
 
     $('#payLinkBtn')?.addEventListener('click', async () => {
       try {

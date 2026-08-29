@@ -159,6 +159,27 @@ el servidor.
 > Ambas integraciones están **fail-safe**: sin secretos configurados el
 > sistema opera manualmente (guías a mano en el panel, sin correos).
 
+## Pago por transferencia SPEI (validación manual)
+
+Stripe cubre tarjeta y OXXO; la **transferencia SPEI no pasa por Stripe**: es
+un flujo propio con validación humana.
+
+1. El cliente elige "Transferencia SPEI" y confirma. `create_order` aparta el
+   stock y el pedido queda `pending` / `payment_status = pending`.
+2. El checkout muestra en pantalla **monto, CLABE, cuenta, beneficiario y la
+   referencia (número de pedido)** con botones de copiar, más accesos directos
+   a WhatsApp y correo para mandar el comprobante. En paralelo sale el correo
+   `spei_instructions` con los mismos datos.
+3. Tú validas la transferencia en tu banca y, en **Admin → Pedido →
+   "Confirmar pago recibido"**, el pedido pasa a `paid` y **se dispara la guía
+   automáticamente** (o, si es entrega local en Ensenada, las instrucciones de
+   reparto). El botón "Reenviar datos SPEI" repite el correo si el cliente lo
+   pierde.
+
+Los datos bancarios viven en `settings.bank_transfer`
+(`{ enabled, bank, beneficiary, account, clabe, whatsapp, email,
+hours_to_pay }`) — se editan sin tocar código ni redesplegar.
+
 ## Dirección inteligente en el checkout
 
 - **CP → Estado/Ciudad/colonias** sin servicios externos: el catálogo SEPOMEX
