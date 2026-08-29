@@ -159,6 +159,21 @@ el servidor.
 > Ambas integraciones están **fail-safe**: sin secretos configurados el
 > sistema opera manualmente (guías a mano en el panel, sin correos).
 
+## Dirección inteligente en el checkout
+
+- **CP → Estado/Ciudad/colonias** sin servicios externos: el catálogo SEPOMEX
+  completo (~146k filas) vive en la tabla `postal_codes` (lectura pública).
+  Al teclear un CP válido se llenan Estado y Ciudad y el campo Colonia
+  sugiere las del CP. Recarga del catálogo: `tools/load-postal-codes.py`
+  (cuenta staff).
+- **Calle con Google Places (opcional):** pon una llave en
+  `js/config.js → GOOGLE_MAPS_KEY` (Google Cloud → habilitar Places API →
+  llave restringida al dominio aminosmx.com) y el campo "Calle y número"
+  autocompleta direcciones de Google; al elegir una se llenan todos los
+  campos y se recotiza el envío. Sin llave, el CP inteligente opera solo.
+- La tienda **no emite factura**: el checkout ya no pide datos fiscales
+  (términos §5 y aviso de privacidad actualizados).
+
 ## Base de datos (resumen)
 
 - `products` + `product_images` (Storage `product-images`, subida desde el panel)

@@ -88,7 +88,9 @@ function readCart() {
           <div class="field span-2"><label>Calle y número *</label>
             <input class="input" id="fLine1" value="${esc(def?.line1 ?? '')}" required></div>
           <div class="field span-2"><label>Colonia / referencias</label>
-            <input class="input" id="fLine2" value="${esc(def?.line2 ?? '')}"></div>
+            <input class="input" id="fLine2" list="colonias" value="${esc(def?.line2 ?? '')}"
+                   placeholder="Se sugiere sola al escribir tu CP">
+            <datalist id="colonias"></datalist></div>
           <div class="field"><label>Ciudad *</label>
             <input class="input" id="fCity" value="${esc(def?.city ?? '')}" required></div>
           <div class="field"><label>Estado *</label>
@@ -115,36 +117,6 @@ function readCart() {
             <span><b>Transferencia SPEI</b><span>Te enviamos la CLABE al confirmar. Validación el mismo día hábil.</span></span></label>
           <label class="pay-opt"><input type="radio" name="pay" value="whatsapp">
             <span><b>Coordinar por WhatsApp</b><span>Te contactamos para acordar la forma de pago.</span></span></label>
-        </div></div>
-
-      <div class="panel"><div class="panel-head"><h2>5 · Facturación (opcional)</h2></div>
-        <div class="panel-body">
-          <label class="check" style="margin-bottom:4px">
-            <input type="checkbox" id="fInvoice"> Necesito factura (CFDI 4.0)</label>
-          <p class="help">Puedes solicitarla dentro del mes en que compres.</p>
-          <div id="invoiceFields" hidden style="margin-top:16px"><div class="form-grid">
-            <div class="field"><label>RFC *</label>
-              <input class="input mono" id="fRfc" style="text-transform:uppercase" maxlength="13"
-                     value="${esc(profile?.billing?.rfc ?? '')}"></div>
-            <div class="field"><label>Razón social *</label>
-              <input class="input" id="fRazon" value="${esc(profile?.billing?.razon_social ?? '')}"></div>
-            <div class="field"><label>Régimen fiscal *</label>
-              <input class="input" id="fRegimen" placeholder="612 · Personas Físicas con Actividades…"
-                     value="${esc(profile?.billing?.regimen ?? '')}"></div>
-            <div class="field"><label>Uso del CFDI *</label>
-              <select class="select" id="fUso">
-                <option value="G03">G03 · Gastos en general</option>
-                <option value="G01">G01 · Adquisición de mercancías</option>
-                <option value="I08">I08 · Otra maquinaria y equipo</option>
-                <option value="S01">S01 · Sin efectos fiscales</option>
-              </select></div>
-            <div class="field"><label>CP fiscal *</label>
-              <input class="input mono" id="fCpFiscal" maxlength="5"
-                     value="${esc(profile?.billing?.cp_fiscal ?? '')}"></div>
-            <div class="field"><label>Correo para la factura</label>
-              <input class="input" id="fEmailFiscal" type="email"
-                     value="${esc(profile?.billing?.email_fiscal ?? session.user.email)}"></div>
-          </div></div>
         </div></div>
 
       <div class="panel"><div class="panel-head"><h2>Notas del pedido (opcional)</h2></div>
@@ -177,10 +149,6 @@ function readCart() {
       </div>
     </div>
   </div>`;
-
-  $('#fInvoice').addEventListener('change', (e) => {
-    $('#invoiceFields').hidden = !e.target.checked;
-  });
 
   /* ---------------- Cotización de envío en vivo (Skydropx) ----------------
      El navegador solo maneja IDs de cotización/tarifa; el precio que se cobra
@@ -267,12 +235,78 @@ function readCart() {
     }
   }
 
+  /* -------- Dirección inteligente: CP → estado, ciudad y colonias ---------
+     Catálogo SEPOMEX completo en la tabla postal_codes (lectura pública, sin
+     servicios externos). Al teclear un CP válido se llenan Estado y Ciudad y
+     el campo Colonia sugiere las del CP; todo sigue siendo editable. */
+  const cpCache = {};
+  async function autocompletaCP() {
+    const cp = $('#fZip').value.trim();
+    if (!/^\d{5}$/.test(cp)) return;
+    try {
+      if (!cpCache[cp]) {
+        const { data } = await supabase.from('postal_codes')
+          .select('colonia, municipio, estado, ciudad')
+          .eq('cp', cp).order('colonia').limit(80);
+        cpCache[cp] = data ?? [];
+      }
+      const filas = cpCache[cp];
+      if (!filas.length || $('#fZip').value.trim() !== cp) return;
+      $('#fState').value = filas[0].estado;
+      $('#fCity').value = filas[0].ciudad || filas[0].municipio;
+      $('#colonias').innerHTML = filas
+        .map((f) => `<option value="${esc(f.colonia)}">`).join('');
+      if (filas.length === 1 && !$('#fLine2').value.trim()) {
+        $('#fLine2').value = filas[0].colonia;
+      }
+    } catch { /* sin catálogo: captura manual, nada se rompe */ }
+  }
+
   let cpTimer = null;
   $('#fZip').addEventListener('input', () => {
+    autocompletaCP();
     clearTimeout(cpTimer);
     cpTimer = setTimeout(cotizar, 600);
   });
-  if (/^\d{5}$/.test($('#fZip').value.trim())) cotizar();
+  if (/^\d{5}$/.test($('#fZip').value.trim())) { autocompletaCP(); cotizar(); }
+
+  /* ------------ Autocompletado de calle con Google Places (opcional) ------
+     Se enciende solo si AMX_CONFIG.GOOGLE_MAPS_KEY tiene valor (llave
+     restringida por dominio; pública por diseño). Al elegir una dirección se
+     llenan calle, colonia, ciudad, estado y CP, y se recotiza el envío.
+     Sin llave, el CP inteligente de arriba trabaja solo. */
+  const gmKey = (window.AMX_CONFIG || {}).GOOGLE_MAPS_KEY;
+  if (gmKey) {
+    window.__amxGmaps = async () => {
+      try {
+        const { Autocomplete } = await google.maps.importLibrary('places');
+        const ac = new Autocomplete($('#fLine1'), {
+          componentRestrictions: { country: 'mx' },
+          fields: ['address_components'],
+          types: ['address'],
+        });
+        ac.addListener('place_changed', () => {
+          const comps = ac.getPlace()?.address_components ?? [];
+          const get = (t) => comps.find((c) => c.types.includes(t))?.long_name ?? '';
+          const calle = get('route'), num = get('street_number');
+          if (calle) $('#fLine1').value = num ? `${calle} ${num}` : calle;
+          const col = get('sublocality') || get('sublocality_level_1') || get('neighborhood');
+          if (col) $('#fLine2').value = col;
+          const ciudad = get('locality') || get('municipality');
+          if (ciudad) $('#fCity').value = ciudad;
+          const edo = get('administrative_area_level_1');
+          if (edo) $('#fState').value = edo;
+          const cp = get('postal_code');
+          if (cp) { $('#fZip').value = cp; autocompletaCP(); cotizar(); }
+        });
+      } catch (e) { console.warn('Google Places no disponible', e); }
+    };
+    const s = document.createElement('script');
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(gmKey) +
+      '&v=weekly&loading=async&language=es&region=MX&callback=__amxGmaps';
+    s.async = true;
+    document.head.appendChild(s);
+  }
 
   $('#placeOrder').addEventListener('click', async () => {
     const btn = $('#placeOrder');
@@ -281,22 +315,6 @@ function readCart() {
       if (!$('#' + id).value.trim()) return toast(`Falta el campo: ${label}`, 'err');
     }
     btn.disabled = true; btn.textContent = 'Procesando…';
-    // Datos fiscales (si pidió factura)
-    let billing = null;
-    if ($('#fInvoice').checked) {
-      const rfc = $('#fRfc').value.trim().toUpperCase();
-      const rfcOk = /^([A-ZÑ&]{3,4})\d{6}[A-Z0-9]{3}$/.test(rfc);
-      if (!rfcOk) { btn.disabled = false; return toast('El RFC no tiene un formato válido', 'err'); }
-      for (const [id, label] of Object.entries({ fRazon: 'razón social', fRegimen: 'régimen fiscal', fCpFiscal: 'CP fiscal' })) {
-        if (!$('#' + id).value.trim()) { btn.disabled = false; return toast(`Falta para la factura: ${label}`, 'err'); }
-      }
-      billing = {
-        rfc, razon_social: $('#fRazon').value.trim(),
-        regimen: $('#fRegimen').value.trim(), uso_cfdi: $('#fUso').value,
-        cp_fiscal: $('#fCpFiscal').value.trim(),
-        email_fiscal: $('#fEmailFiscal').value.trim() || session.user.email,
-      };
-    }
 
     const address = {
       recipient: $('#fName').value.trim(), phone: $('#fPhone').value.trim(),
@@ -314,15 +332,9 @@ function readCart() {
         quoteId: envio.quoteId, rateId: envio.rateId,
       });
 
-      // Método de pago elegido + datos fiscales
+      // Método de pago elegido
       const pay = document.querySelector('input[name="pay"]:checked')?.value ?? 'stripe';
-      const patch = { payment_method: pay };
-      if (billing) {
-        patch.billing = billing;
-        patch.invoice_requested = true;
-        patch.invoice_status = 'requested';
-      }
-      await supabase.from('orders').update(patch).eq('id', result.order_id);
+      await supabase.from('orders').update({ payment_method: pay }).eq('id', result.order_id);
 
       // Guardar dirección y perfil
       if ($('#fSave').checked) {
@@ -330,7 +342,6 @@ function readCart() {
       }
       await supabase.from('profiles').update({
         full_name: address.recipient, phone: address.phone,
-        ...(billing ? { billing } : {}),
       }).eq('id', session.user.id);
 
       // Correo de confirmación (no bloqueante)
