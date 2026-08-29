@@ -195,6 +195,37 @@ hours_to_pay }`) — se editan sin tocar código ni redesplegar.
 - La tienda **no emite factura**: el checkout ya no pide datos fiscales
   (términos §5 y aviso de privacidad actualizados).
 
+## Inicio de sesión con Google
+
+La página de acceso trae un botón "Continuar con Google" que **se muestra
+solo** cuando el proveedor está activo en Supabase; mientras esté apagado, el
+login se ve como siempre. Para encenderlo (una sola vez, ~10 min):
+
+1. **Google Cloud Console** (sirve el mismo proyecto de la llave de Maps):
+   - *APIs y servicios → Pantalla de consentimiento OAuth*: tipo **Externo**,
+     nombre "Aminos MX", correo de soporte y dominio `aminosmx.com`;
+     publica la app (no necesita verificación para el scope básico).
+   - *APIs y servicios → Credenciales → Crear credenciales → ID de cliente
+     de OAuth → Aplicación web*:
+     - Orígenes JavaScript autorizados: `https://www.aminosmx.com`
+     - URI de redirección autorizada:
+       `https://hsjdiwqoakmcwultfksj.supabase.co/auth/v1/callback`
+   - Copia el **ID de cliente** y el **secreto**.
+2. **Supabase Dashboard → Authentication → Sign In / Providers → Google**:
+   actívalo y pega ID y secreto. Guarda.
+3. En **Authentication → URL Configuration** confirma que el *Site URL* sea
+   `https://www.aminosmx.com` y que `https://www.aminosmx.com/*` esté en
+   *Redirect URLs* (también lo usan el enlace mágico y el reset).
+
+No hay que redesplegar nada: al guardar, el botón aparece en `/login`.
+
+- Si el correo de Google ya tiene cuenta (p. ej. el Gmail admin), Supabase
+  **enlaza la identidad** a la cuenta existente: mismos pedidos, mismo rol.
+- El trigger `handle_new_user` ya toma el nombre del perfil de Google.
+- Otros proveedores (Facebook, Apple…) se agregan igual: credenciales del
+  proveedor → activarlo en Supabase → botón equivalente en `login.html`
+  (los estilos `.btn-social` ya están).
+
 ## Catálogo: un producto por compuesto
 
 - Las presentaciones (5/15/20 mg…) del mismo compuesto se **agrupan por

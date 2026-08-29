@@ -184,6 +184,19 @@ table.data td.num, table.data th.num { text-align: right; font-variant-numeric: 
 .auth-card h1 { font-size: 1.4rem; font-weight: 800; }
 .auth-card .lead { margin-top: 8px; font-size: .88rem; color: hsl(var(--muted-fg)); }
 .auth-form { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
+/* Botones de acceso con proveedores (Google hoy; mismos estilos para otros) */
+.social-login { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.btn-social { display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px 16px; border-radius: var(--radius); cursor: pointer;
+  font-weight: 700; font-size: .92rem; border: 1px solid hsl(var(--border));
+  background: hsl(var(--card)); color: hsl(var(--fg)); transition: border-color .15s, background .15s; }
+.btn-social:hover { border-color: hsl(var(--primary) / .6); background: hsl(var(--secondary) / .4); }
+.btn-social:disabled { opacity: .6; cursor: wait; }
+.btn-social svg { width: 18px; height: 18px; flex: none; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin-top: 16px;
+  color: hsl(var(--muted-fg)); font-size: .78rem; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px;
+  background: hsl(var(--border) / .8); }
 .auth-tabs { display: flex; gap: 4px; padding: 4px; border: 1px solid hsl(var(--border) / .7);
   border-radius: calc(var(--radius) - 2px); margin-top: 18px; }
 .auth-tabs button { flex: 1; padding: 8px; border-radius: calc(var(--radius) - 5px);

@@ -29,6 +29,14 @@
     <h1 id="authTitle">Entra a tu cuenta</h1>
     <p class="lead" id="authLead">Consulta tus pedidos y sigue tus envíos en tiempo real.</p>
 
+    <div class="social-login" id="socialLogin" hidden>
+      <button type="button" class="btn-social" id="googleBtn">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continuar con Google
+      </button>
+    </div>
+    <div class="auth-divider" id="authDivider" hidden>o con tu correo</div>
+
     <div class="auth-tabs" role="tablist">
       <button type="button" class="active" data-mode="signin">Iniciar sesión</button>
       <button type="button" data-mode="signup">Crear cuenta</button>
@@ -127,6 +135,46 @@
       btn.textContent = mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión';
     }
   });
+
+  // El botón de Google se enciende solo cuando el proveedor está activo en
+  // Supabase (Authentication → Providers → Google): activarlo allá lo
+  // muestra aquí sin tocar código, y mientras tanto nadie aterriza en la
+  // página de error de un proveedor apagado.
+  fetch(`${window.AMX_CONFIG.SUPABASE_URL}/auth/v1/settings`, {
+    headers: { apikey: window.AMX_CONFIG.SUPABASE_KEY },
+  }).then((r) => r.json()).then((s) => {
+    if (s?.external?.google) {
+      $('#socialLogin').hidden = false;
+      $('#authDivider').hidden = false;
+    }
+  }).catch(() => {});
+
+  // Acceso con Google (Supabase OAuth). Sirve igual para crear cuenta que
+  // para entrar: si el correo ya existe, Supabase enlaza la identidad.
+  $('#googleBtn').addEventListener('click', async () => {
+    const g = $('#googleBtn');
+    g.disabled = true;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: location.origin + next },
+    });
+    if (error) {
+      g.disabled = false;
+      show(/not enabled|disabled|unsupported/i.test(error.message ?? '')
+        ? 'El acceso con Google aún no está activado. Entra con tu correo mientras tanto.'
+        : (error.message ?? 'No pudimos conectar con Google.'));
+    }
+    // Sin error no reactivamos el botón: el navegador ya va camino a Google.
+  });
+
+  // Si Google (o el usuario) cancela, Supabase regresa con el motivo en la
+  // URL; lo mostramos en lugar de dejar la página en silencio.
+  {
+    const p = new URLSearchParams(location.search);
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const desc = p.get('error_description') || h.get('error_description');
+    if (desc) show(decodeURIComponent(String(desc).replace(/\+/g, ' ')));
+  }
 
   $('#magicLink').addEventListener('click', async (e) => {
     e.preventDefault();
