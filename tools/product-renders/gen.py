@@ -8,10 +8,10 @@ CHROME = "/opt/pw-browsers/chromium"
 # (slug, nombre_lineas, dosis, color_hex, tipo, subtexto)
 # tipo: 'powder' (liofilizado) | 'liquid' (agua bacteriostática)
 PRODUCTS = [
-    ("retatrutide-5",  ["RETATRUTIDE"],            "5 MG",   "#A78BFA", "powder", ""),
+    ("retatrutide-5",  ["RETATRUTIDE"],            "5 MG",   "#7C5CE0", "powder", ""),
     ("retatrutide-15", ["RETATRUTIDE"],            "15 MG",  "#7C5CE0", "powder", ""),
-    ("retatrutide-20", ["RETATRUTIDE"],            "20 MG",  "#5B3FD1", "powder", ""),
-    ("tirzepatide-5",  ["TIRZEPATIDE"],            "5 MG",   "#4F8DF7", "powder", ""),
+    ("retatrutide-20", ["RETATRUTIDE"],            "20 MG",  "#7C5CE0", "powder", ""),
+    ("tirzepatide-5",  ["TIRZEPATIDE"],            "5 MG",   "#2E6BE6", "powder", ""),
     ("tirzepatide-15", ["TIRZEPATIDE"],            "15 MG",  "#2E6BE6", "powder", ""),
     ("hgh-fragment-5", ["HGH FRAGMENT", "176-191"],"5 MG",   "#F97362", "powder", ""),
     ("tesamorelin-10", ["TESAMORELIN"],            "10 MG",  "#0EA5A0", "powder", ""),
@@ -27,7 +27,7 @@ PRODUCTS = [
     ("nad-500",        ["NAD+"],                   "500 MG", "#06B6D4", "powder", ""),
     ("ghkcu-50",       ["GHK-CU"],                 "50 MG",  "#C2703D", "powder", ""),
     ("agua-bacteriostatica-3ml",  ["AGUA", "BACTERIOSTÁTICA"], "3 ML",  "#8B9AAE", "liquid", "ALCOHOL BENCÍLICO 0.9%"),
-    ("agua-bacteriostatica-10ml", ["AGUA", "BACTERIOSTÁTICA"], "10 ML", "#64748B", "liquid", "ALCOHOL BENCÍLICO 0.9%"),
+    ("agua-bacteriostatica-10ml", ["AGUA", "BACTERIOSTÁTICA"], "10 ML", "#8B9AAE", "liquid", "ALCOHOL BENCÍLICO 0.9%"),
 ]
 
 def hex_to_rgb(h):
@@ -144,10 +144,10 @@ html, body {{ width: 1200px; height: 1200px; overflow: hidden; }}
   <rect width="1200" height="1200" fill="url(#glow)"/>
 
   <!-- sombra de piso -->
-  <ellipse cx="600" cy="1046" rx="310" ry="44" fill="#000" opacity=".16" filter="url(#soft)"/>
-  <ellipse cx="600" cy="1040" rx="200" ry="26" fill="#000" opacity=".18" filter="url(#soft8)"/>
+  <ellipse cx="575" cy="1052" rx="320" ry="44" fill="#000" opacity=".15" filter="url(#soft)"/>
+  <ellipse cx="580" cy="1046" rx="205" ry="26" fill="#000" opacity=".17" filter="url(#soft8)"/>
 
-  <g>
+  <g transform="rotate(-8 600 620)">
     <!-- tapa flip-off aluminio -->
     <rect x="456" y="126" width="288" height="34" rx="16" fill="url(#metalTop)"/>
     <rect x="446" y="150" width="308" height="98" rx="14" fill="url(#metal)"/>
