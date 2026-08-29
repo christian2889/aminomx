@@ -95,6 +95,10 @@
       "Tripéptido derivado de α-MSH estudiado en investigación de inflamación intestinal y procesos inmunomoduladores.",
       "α-MSH-derived tripeptide studied in research on intestinal inflammation and immunomodulatory processes.",
       ["Antiinflamatorio","Inmunomodulador"],["Anti-inflammatory","Immunomodulator"],10,{}),
+    P("cartalax-10","Cartalax","regenerativos",890,0,"≥99%","Vial liofilizado 10 mg","Lyophilized vial 10 mg",
+      "Tripéptido bioregulador (Ala-Glu-Asp) estudiado en investigación de cartílago, tejido conectivo y salud articular.",
+      "Bioregulator tripeptide (Ala-Glu-Asp) studied in cartilage, connective-tissue and joint-health research.",
+      ["Cartílago","Articulaciones"],["Cartilage","Joints"],10,{n:1}),
     // Anti-edad
     P("glutation-600","Glutatión","anti-edad",590,0,"≥99%","Vial liofilizado 600 mg","Lyophilized vial 600 mg",
       "Antioxidante maestro del organismo, estudiado en investigación de detoxificación hepática, piel y estrés oxidativo.",

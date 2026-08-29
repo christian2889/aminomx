@@ -11,7 +11,7 @@ ficha de producto) con el catálogo y las secciones del diseño de Kimi.
 ## Estructura
 
 ```
-index.html      Home: hero, categorías, catálogo (20 productos), por qué, verificación
+index.html      Home: hero, categorías, catálogo (21 productos), por qué, verificación
                 de COA, pagos y envíos, FAQ, footer
 producto.html   Ficha de producto (BPC-157): galería, presentación, especificación
                 técnica, acordeones, se compran juntos
@@ -32,7 +32,7 @@ assets/         Favicon (marca ADN teal)
 
 ## Funcionalidad
 
-- **Catálogo** de 20 productos en 6 categorías (pérdida de peso, recomposición,
+- **Catálogo** de 21 productos en 6 categorías (pérdida de peso, recomposición,
   metabólicos, regenerativos, anti-edad, insumos), renderizado desde datos;
   las categorías sin productos se ocultan solas.
 - **Búsqueda** y **filtros** por categoría; **quick-view** (modal) por producto.

@@ -23,6 +23,7 @@ PRODUCTS = [
     ("ss31-10",        ["SS-31"],                  "10 MG",  "#C026D3", "powder", "ELAMIPRETIDE"),
     ("glow70-blend",   ["GLOW-70"],                "70 MG",  "#EC4899", "powder", "BPC-157 · GHK-CU · TB-500"),
     ("kpv-5",          ["KPV"],                    "5 MG",   "#84CC16", "powder", ""),
+    ("cartalax-10",    ["CARTALAX"],               "10 MG",  "#EA580C", "powder", "ALA-GLU-ASP"),
     ("glutation-600",  ["GLUTATIÓN"],              "600 MG", "#38BDF8", "powder", ""),
     ("nad-500",        ["NAD+"],                   "500 MG", "#06B6D4", "powder", ""),
     ("ghkcu-50",       ["GHK-CU"],                 "50 MG",  "#C2703D", "powder", ""),
