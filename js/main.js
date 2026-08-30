@@ -186,6 +186,50 @@
       .catch(function () { /* sin conexión: se mantiene el catálogo embebido */ });
   }
 
+  /* ------------------- Promoción activa (settings.promo) -------------------
+     El cupón real vive en la tabla coupons y lo valida create_order en el
+     servidor; esta llave solo enciende el banner y el descuento "se aplica
+     solo" del carrito. Apagarla (enabled:false) quita todo sin redesplegar. */
+  var PROMO = null;
+  function promoDisc(sub) {
+    return PROMO ? Math.floor((sub * PROMO.percent) / 100) : 0;
+  }
+  function paintPromo() {
+    if (!PROMO) return;
+    var bar = $(".announce");
+    if (bar) {
+      var extra = bar.querySelector("[data-promo-extra]");
+      if (!extra) {
+        extra = document.createElement("span");
+        extra.setAttribute("data-promo-extra", "");
+        bar.appendChild(extra);
+      }
+      extra.innerHTML = " · 🎉 " + esc(T(PROMO.labelEs, PROMO.labelEn)) +
+        ' · <b class="mono">' + esc(PROMO.code) + "</b> " +
+        T("— se aplica solo en tu carrito", "— applied automatically in your cart");
+    }
+    $$("[data-promo-code]").forEach(function (n) { n.textContent = PROMO.code; });
+  }
+  function loadPromo() {
+    if (!CFG.SUPABASE_URL || !window.fetch) return;
+    fetch(CFG.SUPABASE_URL + "/rest/v1/settings?key=eq.promo&select=value", {
+      headers: { apikey: CFG.SUPABASE_KEY, Authorization: "Bearer " + CFG.SUPABASE_KEY }
+    })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (rows) {
+        var v = rows && rows[0] && rows[0].value;
+        if (!v || v.enabled !== true || !v.code || !(Number(v.percent) > 0)) return;
+        PROMO = {
+          code: String(v.code),
+          percent: Number(v.percent),
+          labelEs: v.label_es || (v.percent + "% de descuento en todo el sitio"),
+          labelEn: v.label_en || (v.percent + "% off sitewide")
+        };
+        paintPromo(); renderCart();
+      })
+      .catch(function () { /* sin promo: el sitio opera normal */ });
+  }
+
   /* -------------------- Estado -------------------- */
   var state = {
     lang: (LS && LS.getItem("amx_lang")) || "es",
@@ -231,7 +275,7 @@
   }
   function setLang(l) {
     state.lang = l; if (LS) LS.setItem("amx_lang", l);
-    applyLang(); renderCats(); renderFilters(); renderGrid(); renderCart();
+    applyLang(); renderCats(); renderFilters(); renderGrid(); renderCart(); paintPromo();
   }
 
   /* -------------------- Categorías -------------------- */
@@ -417,7 +461,11 @@
     $$("[data-cart-count]").forEach(function (el) { el.textContent = count; el.setAttribute("data-empty", count === 0 ? "true" : "false"); });
 
     var sub = cartSubtotal();
-    var shipping = (sub === 0 || sub >= FREE_SHIPPING) ? 0 : SHIPPING_COST;
+    // La promo se descuenta antes de evaluar el envío gratis: el servidor
+    // compara (subtotal - descuento) contra el umbral, aquí igual.
+    var disc = promoDisc(sub);
+    var eff = sub - disc;
+    var shipping = (sub === 0 || eff >= FREE_SHIPPING) ? 0 : SHIPPING_COST;
     var n = state.cart.length;
     var subEl = $("[data-cart-sub]");
     if (subEl) subEl.textContent = n === 0 ? T("Aún no tienes productos.", "No products yet.")
@@ -428,9 +476,9 @@
     if (foot) foot.hidden = n === 0;
 
     var bar = $("[data-ship-bar]"), msg = $("[data-ship-msg]");
-    if (bar) bar.style.width = Math.min(100, (sub / FREE_SHIPPING) * 100) + "%";
+    if (bar) bar.style.width = Math.min(100, (eff / FREE_SHIPPING) * 100) + "%";
     if (msg) {
-      var missing = Math.max(0, FREE_SHIPPING - sub);
+      var missing = Math.max(0, FREE_SHIPPING - eff);
       msg.innerHTML = icon("i-truck") + (missing > 0
         ? T("Te faltan <b>" + fmt(missing) + "</b> para envío gratis", "You're <b>" + fmt(missing) + "</b> away from free shipping")
         : "<b>" + T("¡Tienes envío gratis!", "You have free shipping!") + "</b>");
@@ -458,8 +506,10 @@
       }
     }
     var subOut = $("[data-cart-subtotal]"); if (subOut) subOut.textContent = fmt(sub);
+    $$("[data-promo-line]").forEach(function (el) { el.hidden = !(disc > 0 && n > 0); });
+    var dOut = $("[data-cart-discount]"); if (dOut) dOut.textContent = "−" + fmt(disc);
     var shipOut = $("[data-cart-shipping]"); if (shipOut) shipOut.textContent = shipping === 0 ? T("Gratis", "Free") : fmt(shipping);
-    var totOut = $("[data-cart-total]"); if (totOut) totOut.textContent = fmt(sub + shipping);
+    var totOut = $("[data-cart-total]"); if (totOut) totOut.textContent = fmt(eff + shipping);
   }
 
   function openCart() { if (drawer) { drawer.classList.add("show"); drawer.setAttribute("aria-hidden", "false"); if (overlay) overlay.classList.add("show"); } }
@@ -623,5 +673,5 @@
 
   /* -------------------- Init -------------------- */
   applyLang(); renderCats(); renderFilters(); renderGrid(); renderCart();
-  loadCatalog();
+  loadCatalog(); loadPromo();
 })();

@@ -139,10 +139,21 @@ async function renderSpei(order) {
   const { data: addresses } = await supabase.from('addresses')
     .select('*').order('is_default', { ascending: false });
 
+  // Promo del sitio (settings.promo): el cupón se precarga y el resumen
+  // muestra el descuento en vivo. El cobro real lo calcula create_order al
+  // validar el cupón contra la tabla coupons — aquí solo se pinta.
+  const { data: promoRow } = await supabase.from('settings')
+    .select('value').eq('key', 'promo').maybeSingle();
+  const pv = promoRow?.value;
+  const promo = (pv?.enabled === true && pv.code && Number(pv.percent) > 0)
+    ? { code: String(pv.code), percent: Number(pv.percent) } : null;
+
   const subtotal = items.reduce((s, i) => s + i.p.price_cents * i.qty, 0);
   const free = cfg.FREE_SHIPPING_CENTS ?? 190000;
   const flat = cfg.SHIPPING_FLAT_CENTS ?? 18900;
-  const shipping = subtotal >= free ? 0 : flat;
+  // Mismo redondeo que el servidor: (subtotal * pct) / 100 con división entera.
+  const disc0 = promo ? Math.floor((subtotal * promo.percent) / 100) : 0;
+  const shipping = (subtotal - disc0) >= free ? 0 : flat;
   const def = addresses?.[0];
 
   body.innerHTML = `<div class="co-grid">
@@ -207,15 +218,20 @@ async function renderSpei(order) {
         <div class="field" style="margin:12px 0">
           <label>Cupón</label>
           <div style="display:flex;gap:8px">
-            <input class="input" id="fCoupon" placeholder="BULK10">
+            <input class="input" id="fCoupon" placeholder="RETA15" value="${promo ? esc(promo.code) : ''}">
           </div>
-          <span class="help">Se valida al confirmar el pedido.</span>
+          <span class="help">${promo
+            ? `🎉 Cupón ${esc(promo.code)} (−${promo.percent}%) aplicado automáticamente.`
+            : 'Se valida al confirmar el pedido.'}</span>
         </div>
         <div class="sum-row"><span>Subtotal</span><b>${mxn(subtotal)}</b></div>
+        <div class="sum-row" id="sumDescRow" ${disc0 > 0 ? '' : 'hidden'}>
+          <span>Descuento <span class="mono">${promo ? esc(promo.code) : ''}</span></span>
+          <b id="sumDesc" style="color:hsl(var(--primary))">−${mxn(disc0)}</b></div>
         <div class="sum-row"><span>Envío <span class="help" id="sumCarrier"></span></span>
           <b id="sumShip">${shipping === 0 ? 'Gratis' : mxn(shipping)}</b></div>
         <div class="sum-total"><span>Total estimado</span>
-          <span style="color:hsl(var(--primary))" id="sumTotal">${mxn(subtotal + shipping)}</span></div>
+          <span style="color:hsl(var(--primary))" id="sumTotal">${mxn(subtotal - disc0 + shipping)}</span></div>
         <button class="btn btn-primary btn-lg btn-block" id="placeOrder" style="margin-top:16px">
           Confirmar pedido</button>
         <p class="help" style="margin-top:12px;text-align:center">
@@ -227,14 +243,27 @@ async function renderSpei(order) {
   /* ---------------- Cotización de envío en vivo (Skydropx) ----------------
      El navegador solo maneja IDs de cotización/tarifa; el precio que se cobra
      lo relee create_order de la tabla shipping_quotes en el servidor. */
-  const envio = { quoteId: null, rateId: null, cents: shipping, gratis: subtotal >= free };
+  const envio = { quoteId: null, rateId: null, cents: shipping, gratis: (subtotal - disc0) >= free };
   let quoteSeq = 0;
 
+  // Descuento visible según lo tecleado en el cupón. Solo se pinta en vivo el
+  // de la promo del sitio; cualquier otro código lo valida create_order.
+  const descuento = () => {
+    const c = ($('#fCoupon')?.value ?? '').trim().toUpperCase();
+    return (promo && c === promo.code.toUpperCase())
+      ? Math.floor((subtotal * promo.percent) / 100) : 0;
+  };
+
   function pintaResumen() {
+    const disc = descuento();
+    envio.gratis = (subtotal - disc) >= free;
     const efectivo = envio.gratis ? 0 : envio.cents;
+    const row = $('#sumDescRow');
+    if (row) { row.hidden = disc === 0; $('#sumDesc').textContent = `−${mxn(disc)}`; }
     $('#sumShip').textContent = efectivo === 0 ? 'Gratis' : mxn(efectivo);
-    $('#sumTotal').textContent = mxn(subtotal + efectivo);
+    $('#sumTotal').textContent = mxn(subtotal - disc + efectivo);
   }
+  $('#fCoupon')?.addEventListener('input', pintaResumen);
 
   function tarifaHTML(r, checked) {
     const precio = (envio.gratis || !r.cost_cents) ? 'Gratis' : mxn(r.cost_cents);
@@ -272,9 +301,10 @@ async function renderSpei(order) {
       envio.quoteId = data.quote_id ?? null;
       envio.rateId = String(rates[0].id);
       envio.cents = rates[0].cost_cents;
+      envio.gratis = (subtotal - descuento()) >= free;
 
       const faltaLocal = localRate && !envio.gratis && localRate.free_from_cents
-        ? localRate.free_from_cents - subtotal : 0;
+        ? localRate.free_from_cents - (subtotal - descuento()) : 0;
       box.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
         ${rates.map((r, i) => tarifaHTML(r, i === 0)).join('')}
         ${localRate ? `<p class="help">🛵 En Ensenada entregamos a domicilio el mismo día

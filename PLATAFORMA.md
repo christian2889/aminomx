@@ -228,6 +228,22 @@ No hay que redesplegar nada: al guardar, el botón aparece en `/login`.
   proveedor → activarlo en Supabase → botón equivalente en `login.html`
   (los estilos `.btn-social` ya están).
 
+## Promoción del sitio (cupón automático)
+
+Un cupón "de banner" tipo Amino Club: hoy **RETA15 (−15% en todo)**.
+
+- El cupón real vive en la tabla `coupons` y lo valida/cobra `create_order`
+  en el servidor (como cualquier cupón).
+- La llave `settings.promo` `{ enabled, code, percent, label_es, label_en }`
+  enciende lo visual: banner en la barra superior, línea de descuento en el
+  carrito y cupón **precargado** en el checkout con el descuento en vivo.
+  El envío gratis se evalúa sobre el subtotal ya descontado, igual que en el
+  servidor.
+- Para **pausar la promo**: `settings.promo → enabled:false` (el cupón puede
+  seguir activo para quien lo teclee, o desactívalo en Admin → Cupones).
+  Para cambiarla: actualiza el cupón y la llave con el nuevo código/% —
+  sin redesplegar.
+
 ## Catálogo: un producto por compuesto
 
 - Las presentaciones (5/15/20 mg…) del mismo compuesto se **agrupan por

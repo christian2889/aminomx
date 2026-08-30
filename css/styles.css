@@ -66,6 +66,7 @@
 /* Sin esto, cualquier regla con display (.field, .social-login…) le gana al
    atributo hidden del navegador y "oculto" queda visible. */
 [hidden] { display: none !important; }
+.mono { font-family: var(--mono); }
 * { margin: 0; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
