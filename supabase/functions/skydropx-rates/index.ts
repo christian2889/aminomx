@@ -72,16 +72,18 @@ Deno.serve(async (req) => {
         return json({ error: 'Falta el código postal de destino', rates: [] }, 400);
       }
 
-      // Entrega local Ensenada (DiDi / asociado VIP): tarifa sintética que se
-      // antepone a las de paquetería y se persiste igual que ellas, así
-      // create_order la cobra y registra sin ningún caso especial.
+      // Entrega local Ensenada (DiDi / asociado VIP): en un CP local la
+      // entrega es exclusivamente local — ni se cotiza paquetería ni se
+      // ofrece. La tarifa sintética viaja por el mismo riel que las de
+      // Skydropx (shipping_quotes → create_order) sin casos especiales.
       const local = await localRateFor(admin, dest.postal_code);
-      const q = await quoteForAddress(dest, box);
+      const q = local
+        ? { qid: `local-${crypto.randomUUID()}`, rates: [], full: null, error: null }
+        : await quoteForAddress(dest, box);
 
-      // Un CP local nunca se queda sin opción por una caída de Skydropx.
       if (q.error && !local) return json({ error: 'Skydropx', detail: q.error, rates: [] }, 502);
 
-      const rates = local ? [local, ...q.rates] : q.rates;
+      const rates = local ? [local] : q.rates;
       const best = rates[0];
 
       if (order_id && best) {

@@ -1,10 +1,11 @@
 -- ============================================================================
 -- 0012 — Entrega local Ensenada (DiDi / asociados Aminos MX VIP)
 --
--- La tarifa local viaja como cualquier otra en shipping_quotes, pero puede
--- traer min_subtotal_cents (gratis solo desde $1,900): create_order lo
--- revalida en el servidor — si el pedido no alcanza el mínimo, la selección
--- se ignora y aplica la tarifa normal. Elegir tarifa nunca es elegir precio.
+-- La tarifa local viaja como cualquier otra en shipping_quotes. En un CP de
+-- Ensenada la entrega es exclusivamente local (skydropx-rates ya ni cotiza
+-- paquetería): cuesta cost_cents ($100) y create_order la deja en $0 desde
+-- el umbral nacional de envío gratis. min_subtotal_cents es informativo
+-- ("gratis desde") para el checkout. Elegir tarifa nunca es elegir precio.
 --
 -- Config de la opción local en settings, key 'local_delivery':
 --   { enabled, provider, service, cost_cents, min_subtotal_cents, cp_prefixes }
@@ -14,7 +15,7 @@ insert into public.settings (key, value) values ('local_delivery', jsonb_build_o
   'enabled', true,
   'provider', 'Entrega local Ensenada',
   'service', 'Mismo día · DiDi o asociado Aminos MX VIP',
-  'cost_cents', 0,
+  'cost_cents', 10000,
   'min_subtotal_cents', 190000,
   'cp_prefixes', jsonb_build_array('2276','2277','2278','2279','228')
 ))

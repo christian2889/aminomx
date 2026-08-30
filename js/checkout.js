@@ -263,28 +263,26 @@ async function renderSpei(order) {
       });
       if (seq !== quoteSeq) return; // llegó tarde: el CP ya cambió
       const todas = data.rates ?? [];
-      // Entrega local Ensenada: solo aparece si el pedido alcanza su mínimo
-      // ($1,900). El servidor lo vuelve a validar al crear el pedido.
-      const rates = todas
-        .filter((r) => !r.min_subtotal_cents || subtotal >= r.min_subtotal_cents)
-        .slice(0, 5);
-      const localFuera = todas.find((r) =>
-        r.local && r.min_subtotal_cents && subtotal < r.min_subtotal_cents);
+      // CP de Ensenada: la entrega es exclusivamente local — el servidor ya
+      // ni cotiza paquetería, aquí solo mostramos esa opción.
+      const localRate = todas.find((r) => r.local);
+      const rates = localRate ? [localRate] : todas.slice(0, 5);
       if (!rates.length) throw new Error('sin tarifas');
 
       envio.quoteId = data.quote_id ?? null;
       envio.rateId = String(rates[0].id);
       envio.cents = rates[0].cost_cents;
 
+      const faltaLocal = localRate && !envio.gratis && localRate.free_from_cents
+        ? localRate.free_from_cents - subtotal : 0;
       box.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
         ${rates.map((r, i) => tarifaHTML(r, i === 0)).join('')}
-        ${rates.some((r) => r.local) ? `<p class="help">🛵 Entrega local en Ensenada por DiDi o
-          asociado Aminos MX VIP: después de pagar, escríbenos por
+        ${localRate ? `<p class="help">🛵 En Ensenada entregamos a domicilio el mismo día
+          (DiDi o asociado Aminos MX VIP)${faltaLocal > 0 ? ` — gratis desde
+          ${mxn(localRate.free_from_cents)}, te faltan ${mxn(faltaLocal)}` : ''}.
+          Después de pagar, escríbenos por
           <a href="https://wa.me/526461164390" target="_blank" rel="noopener">WhatsApp</a>
-          para coordinar tu entrega el mismo día.</p>` : ''}
-        ${localFuera ? `<p class="help">🛵 En Ensenada tu entrega local es gratis en pedidos
-          desde ${mxn(localFuera.min_subtotal_cents)} — te faltan
-          ${mxn(localFuera.min_subtotal_cents - subtotal)}.</p>` : ''}
+          para coordinar tu entrega.</p>` : ''}
         ${envio.gratis ? '<p class="help">Tu pedido supera $1,900: el envío corre por nuestra cuenta 🎉</p>' : ''}
       </div>`;
       pintaResumen();

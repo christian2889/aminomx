@@ -147,14 +147,16 @@ Cada guía viaja con su carta porte: clave SAT de producto
 
 **Entrega local en Ensenada (DiDi / asociados VIP).** DiDi no tiene API
 pública de mensajería en México, así que el reparto se gestiona desde la app
-DiDi (o con un asociado propio): la tienda solo ofrece la opción. Para CP de
-Ensenada el checkout muestra "Entrega local · gratis en pedidos desde
-$1,900"; al pagar, el pedido pasa a `processing`, la línea de tiempo instruye
-al cliente a coordinar por WhatsApp y el panel muestra los pasos (sin guía
-Skydropx; repartidor/rastreo se capturan a mano). Config en `settings`, key
-`local_delivery`: `{ enabled, provider, service, cost_cents,
-min_subtotal_cents, cp_prefixes }` — el mínimo lo revalida `create_order` en
-el servidor.
+DiDi (o con un asociado propio): la tienda solo ofrece la opción. En un CP
+de Ensenada la entrega es **exclusivamente local**: `skydropx-rates` ni
+siquiera cotiza paquetería y el checkout muestra solo "Entrega local ·
+$100" (gratis desde el umbral nacional de $1,900, que aplica `create_order`
+en el servidor). Al pagar, el pedido pasa a `processing`, la línea de tiempo
+instruye al cliente a coordinar por WhatsApp y el panel muestra los pasos
+(sin guía Skydropx; repartidor/rastreo se capturan a mano). Config en
+`settings`, key `local_delivery`: `{ enabled, provider, service, cost_cents,
+min_subtotal_cents, cp_prefixes }` — `cost_cents` es el precio y
+`min_subtotal_cents` el "gratis desde" que se muestra al cliente.
 
 > Ambas integraciones están **fail-safe**: sin secretos configurados el
 > sistema opera manualmente (guías a mano en el panel, sin correos).

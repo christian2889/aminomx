@@ -293,8 +293,10 @@ type Client = {
    tiene API pública de mensajería, así que la tienda solo ofrece la opción y
    el cliente coordina por WhatsApp tras pagar. Config en settings, key
    'local_delivery': { enabled, provider, service, cost_cents,
-   min_subtotal_cents, cp_prefixes }. La tarifa viaja por el mismo riel que
-   las de Skydropx (shipping_quotes → create_order), que revalida el mínimo. */
+   min_subtotal_cents, cp_prefixes }. En un CP local la entrega es SIEMPRE
+   local (no se cotiza paquetería): cuesta cost_cents y create_order la deja
+   en $0 desde el umbral nacional de envío gratis; min_subtotal_cents queda
+   solo como dato informativo ("gratis desde") para el checkout. */
 export const LOCAL_RATE_ID = 'local-didi';
 
 export async function localRateFor(admin: Client, postalCode: string) {
@@ -317,7 +319,10 @@ export async function localRateFor(admin: Client, postalCode: string) {
       cost_cents: cents,
       pickup: false,
       local: true,
-      min_subtotal_cents: Math.max(0, Number(cfg.min_subtotal_cents ?? 0) || 0),
+      // Informativo para el checkout ("gratis desde $X"). Sin
+      // min_subtotal_cents la tarifa aplica a cualquier monto y create_order
+      // la pone en $0 al alcanzar el umbral nacional de envío gratis.
+      free_from_cents: Math.max(0, Number(cfg.min_subtotal_cents ?? 0) || 0),
     };
   } catch {
     return null;
