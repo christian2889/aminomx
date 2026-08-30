@@ -133,7 +133,7 @@ begin
        where r->>'id' = p_rate_id;
 
       -- Tarifas con monto mínimo (entrega local Ensenada gratis desde
-      -- $2,000): si el pedido, ya con descuento, no lo alcanza, la selección
+      -- $1,900): si el pedido, ya con descuento, no lo alcanza, la selección
       -- se ignora y aplica la tarifa normal de paquetería.
       if v_rate_cost is not null
          and (v_subtotal - v_discount) >= coalesce(v_rate_min, 0) then

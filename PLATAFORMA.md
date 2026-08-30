@@ -149,7 +149,7 @@ Cada guía viaja con su carta porte: clave SAT de producto
 pública de mensajería en México, así que el reparto se gestiona desde la app
 DiDi (o con un asociado propio): la tienda solo ofrece la opción. Para CP de
 Ensenada el checkout muestra "Entrega local · gratis en pedidos desde
-$2,000"; al pagar, el pedido pasa a `processing`, la línea de tiempo instruye
+$1,900"; al pagar, el pedido pasa a `processing`, la línea de tiempo instruye
 al cliente a coordinar por WhatsApp y el panel muestra los pasos (sin guía
 Skydropx; repartidor/rastreo se capturan a mano). Config en `settings`, key
 `local_delivery`: `{ enabled, provider, service, cost_cents,

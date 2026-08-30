@@ -264,7 +264,7 @@ async function renderSpei(order) {
       if (seq !== quoteSeq) return; // llegó tarde: el CP ya cambió
       const todas = data.rates ?? [];
       // Entrega local Ensenada: solo aparece si el pedido alcanza su mínimo
-      // ($2,000). El servidor lo vuelve a validar al crear el pedido.
+      // ($1,900). El servidor lo vuelve a validar al crear el pedido.
       const rates = todas
         .filter((r) => !r.min_subtotal_cents || subtotal >= r.min_subtotal_cents)
         .slice(0, 5);

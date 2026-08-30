@@ -2,7 +2,7 @@
 -- 0012 — Entrega local Ensenada (DiDi / asociados Aminos MX VIP)
 --
 -- La tarifa local viaja como cualquier otra en shipping_quotes, pero puede
--- traer min_subtotal_cents (gratis solo desde $2,000): create_order lo
+-- traer min_subtotal_cents (gratis solo desde $1,900): create_order lo
 -- revalida en el servidor — si el pedido no alcanza el mínimo, la selección
 -- se ignora y aplica la tarifa normal. Elegir tarifa nunca es elegir precio.
 --
@@ -15,7 +15,7 @@ insert into public.settings (key, value) values ('local_delivery', jsonb_build_o
   'provider', 'Entrega local Ensenada',
   'service', 'Mismo día · DiDi o asociado Aminos MX VIP',
   'cost_cents', 0,
-  'min_subtotal_cents', 200000,
+  'min_subtotal_cents', 190000,
   'cp_prefixes', jsonb_build_array('2276','2277','2278','2279','228')
 ))
 on conflict (key) do update set value = excluded.value;
@@ -142,7 +142,7 @@ begin
        where r->>'id' = p_rate_id;
 
       -- Tarifas con monto mínimo (entrega local Ensenada gratis desde
-      -- $2,000): si el pedido, ya con descuento, no lo alcanza, la selección
+      -- $1,900): si el pedido, ya con descuento, no lo alcanza, la selección
       -- se ignora y aplica la tarifa normal de paquetería.
       if v_rate_cost is not null
          and (v_subtotal - v_discount) >= coalesce(v_rate_min, 0) then
