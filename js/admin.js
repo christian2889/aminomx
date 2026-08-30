@@ -975,7 +975,7 @@ async function viewAjustes() {
       <div class="panel"><div class="panel-head"><h2>Envío</h2></div><div class="panel-body">
         <form id="setForm"><div class="form-grid">
           <div class="field"><label>Envío gratis desde (MXN)</label>
-            <input class="input" name="free" type="number" min="0" value="${(ship.free_threshold_cents ?? 350000) / 100}"></div>
+            <input class="input" name="free" type="number" min="0" value="${(ship.free_threshold_cents ?? 190000) / 100}"></div>
           <div class="field"><label>Costo de envío (MXN)</label>
             <input class="input" name="flat" type="number" min="0" value="${(ship.flat_cost_cents ?? 18900) / 100}"></div>
           <div class="field"><label>Correo de la tienda</label>

@@ -9,7 +9,7 @@
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var LS = window.localStorage;
 
-  var FREE_SHIPPING = 3500, SHIPPING_COST = 189;
+  var FREE_SHIPPING = 1900, SHIPPING_COST = 189;
 
   /* -------------------- Datos -------------------- */
   var CATEGORIES = [

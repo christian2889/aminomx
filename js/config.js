@@ -6,7 +6,7 @@
 window.AMX_CONFIG = {
   SUPABASE_URL: "https://hsjdiwqoakmcwultfksj.supabase.co",
   SUPABASE_KEY: "sb_publishable_-tqa9xesQeXjw5T5OOkfsw_3nVbGtVQ",
-  FREE_SHIPPING_CENTS: 350000,
+  FREE_SHIPPING_CENTS: 190000,
   SHIPPING_FLAT_CENTS: 18900,
   // Autocompletado de calle en el checkout (Google Places). Déjala vacía y el
   // checkout usa solo el CP inteligente (SEPOMEX). La llave se restringe por

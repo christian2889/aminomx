@@ -42,7 +42,7 @@ Vercel (sitio estático)                Supabase (proyecto: aminomx)
 
 1. Cliente agrega al carrito → `checkout.html` (requiere cuenta).
 2. RPC **`create_order`** valida en el servidor precio, stock y cupón,
-   descuenta stock, calcula envío (gratis ≥ $3,500 MXN) y crea el evento
+   descuenta stock, calcula envío (gratis ≥ $1,900 MXN) y crea el evento
    inicial. El cliente nunca fija precios.
 3. **Pago con Stripe** (si eligió "Pago en línea"): se redirige a Stripe
    Checkout (tarjeta u OXXO, en MXN). El webhook firmado confirma el pago,

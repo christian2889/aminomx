@@ -140,7 +140,7 @@ async function renderSpei(order) {
     .select('*').order('is_default', { ascending: false });
 
   const subtotal = items.reduce((s, i) => s + i.p.price_cents * i.qty, 0);
-  const free = cfg.FREE_SHIPPING_CENTS ?? 350000;
+  const free = cfg.FREE_SHIPPING_CENTS ?? 190000;
   const flat = cfg.SHIPPING_FLAT_CENTS ?? 18900;
   const shipping = subtotal >= free ? 0 : flat;
   const def = addresses?.[0];
@@ -285,7 +285,7 @@ async function renderSpei(order) {
         ${localFuera ? `<p class="help">🛵 En Ensenada tu entrega local es gratis en pedidos
           desde ${mxn(localFuera.min_subtotal_cents)} — te faltan
           ${mxn(localFuera.min_subtotal_cents - subtotal)}.</p>` : ''}
-        ${envio.gratis ? '<p class="help">Tu pedido supera $3,500: el envío corre por nuestra cuenta 🎉</p>' : ''}
+        ${envio.gratis ? '<p class="help">Tu pedido supera $1,900: el envío corre por nuestra cuenta 🎉</p>' : ''}
       </div>`;
       pintaResumen();
 
