@@ -169,13 +169,20 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 .btn-icon { padding:9px; }
 .btn-block { width:100%; }
 
-/* ---------- Announcement ---------- */
-.announce { position:fixed; inset-inline:0; top:0; z-index:60; height:36px; display:flex; align-items:center; justify-content:center; gap:8px; background:hsl(var(--primary)); color:hsl(var(--primary-fg)); font-size:.8rem; font-weight:600; padding-inline:16px; text-align:center; }
-.announce .ico { width:15px; height:15px; }
+/* ---------- Announcement ----------
+   La barra puede crecer (promo activa) y en móvil envolver a dos líneas:
+   main.js mide su altura real y la publica en --announce-h, de la que
+   cuelgan header, menú móvil, hero y breadcrumb. */
+.announce { position:fixed; inset-inline:0; top:0; z-index:60; min-height:36px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:2px 8px; background:hsl(var(--primary)); color:hsl(var(--primary-fg)); font-size:.8rem; font-weight:600; padding:5px 16px; text-align:center; line-height:1.35; }
+.announce .ico { width:15px; height:15px; flex:none; }
 .announce .sep { opacity:.5; }
+@media (max-width: 680px) {
+  .announce { font-size:.72rem; }
+  .announce-more { display:none; }
+}
 
 /* ---------- Header ---------- */
-.header { position:fixed; inset-inline:0; top:36px; z-index:50; transition:background .3s, border-color .3s, box-shadow .3s; border-bottom:1px solid transparent; }
+.header { position:fixed; inset-inline:0; top:var(--announce-h, 36px); z-index:50; transition:background .3s, border-color .3s, box-shadow .3s; border-bottom:1px solid transparent; }
 .header[data-scrolled="true"] { border-bottom-color:hsl(var(--border) / .6); box-shadow:0 10px 30px -10px hsl(var(--bg) / .6); background:hsl(var(--glass-bg) / var(--glass-a)); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); }
 .header-inner { display:flex; align-items:center; justify-content:space-between; height:64px; gap:16px; }
 .brand { display:inline-flex; align-items:center; gap:10px; }
@@ -202,14 +209,14 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 .burger[aria-expanded="true"] .ico-menu { display:none; }
 .burger[aria-expanded="true"] .ico-close { display:block; }
 
-.mobile-menu { position:fixed; inset-inline:0; top:100px; z-index:49; border-bottom:1px solid hsl(var(--border) / .6); background:hsl(var(--glass-bg) / .96); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); transform:translateY(-140%); transition:transform .3s ease; }
+.mobile-menu { position:fixed; inset-inline:0; top:calc(var(--announce-h, 36px) + 64px); z-index:49; border-bottom:1px solid hsl(var(--border) / .6); background:hsl(var(--glass-bg) / .96); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); transform:translateY(-140%); transition:transform .3s ease; }
 .mobile-menu.show { transform:none; }
 .mobile-menu .inner { display:flex; flex-direction:column; padding:8px var(--pad) 16px; }
 .mobile-menu a { padding:12px 12px; border-radius:calc(var(--radius) - 2px); font-weight:500; color:hsl(var(--muted-fg)); }
 .mobile-menu a:hover { background:hsl(var(--secondary)); color:hsl(var(--fg)); }
 
 /* ---------- Hero ---------- */
-.hero { position:relative; overflow:hidden; padding-top:clamp(120px,16vw,168px); padding-bottom:64px; }
+.hero { position:relative; overflow:hidden; padding-top:calc(var(--announce-h, 36px) + clamp(84px,12vw,132px)); padding-bottom:64px; }
 .hero .molecule-bg { position:absolute; inset:0; opacity:.6; }
 .hero .glow-blob { position:absolute; top:-160px; left:50%; width:820px; height:520px; transform:translateX(-50%); border-radius:50%; opacity:.25; filter:blur(64px); background:radial-gradient(ellipse at center, hsl(174 84% 45% / .55) 0%, hsl(199 89% 48% / .25) 45%, transparent 70%); pointer-events:none; }
 .hero-inner { position:relative; text-align:center; }
@@ -436,7 +443,7 @@ h1, h2, h3, h4 { line-height: 1.1; letter-spacing: -.02em; font-weight: 700; }
 /* ==========================================================================
    Product detail page (producto.html)
    ========================================================================== */
-.breadcrumb { padding-top:112px; }
+.breadcrumb { padding-top:calc(var(--announce-h, 36px) + 76px); }
 .breadcrumb .bc { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:.8rem; color:hsl(var(--muted-fg)); }
 .breadcrumb .bc a:hover { color:hsl(var(--primary)); }
 .breadcrumb .bc .here { color:hsl(var(--fg)); }

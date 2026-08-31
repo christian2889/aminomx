@@ -205,11 +205,20 @@
         bar.appendChild(extra);
       }
       extra.innerHTML = " · 🎉 " + esc(T(PROMO.labelEs, PROMO.labelEn)) +
-        ' · <b class="mono">' + esc(PROMO.code) + "</b> " +
-        T("— se aplica solo en tu carrito", "— applied automatically in your cart");
+        ' · <b class="mono">' + esc(PROMO.code) + "</b>" +
+        '<span class="announce-more"> ' +
+        T("— se aplica solo en tu carrito", "— applied automatically in your cart") + "</span>";
     }
     $$("[data-promo-code]").forEach(function (n) { n.textContent = PROMO.code; });
+    syncAnnounce();
   }
+  // Altura real de la barra (una o dos líneas) → --announce-h, de la que
+  // cuelgan el header fijo, el menú móvil y el arranque del hero.
+  function syncAnnounce() {
+    var bar = $(".announce");
+    if (bar) document.documentElement.style.setProperty("--announce-h", bar.offsetHeight + "px");
+  }
+  window.addEventListener("resize", syncAnnounce);
   function loadPromo() {
     if (!CFG.SUPABASE_URL || !window.fetch) return;
     fetch(CFG.SUPABASE_URL + "/rest/v1/settings?key=eq.promo&select=value", {
@@ -673,5 +682,5 @@
 
   /* -------------------- Init -------------------- */
   applyLang(); renderCats(); renderFilters(); renderGrid(); renderCart();
-  loadCatalog(); loadPromo();
+  syncAnnounce(); loadCatalog(); loadPromo();
 })();
