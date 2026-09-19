@@ -224,6 +224,32 @@ async function renderRelated(p) {
     ).join('');
   }
 
+  // Escalones por volumen (settings.qty_discounts): aquí solo se anuncian;
+  // el descuento lo pintan carrito/checkout y lo cobra create_order.
+  const { data: qrow } = await supabase.from('settings')
+    .select('value').eq('key', 'qty_discounts').maybeSingle();
+  const qd = qrow?.value;
+  if (qd?.enabled === true && Array.isArray(qd.tiers) && qd.tiers.length) {
+    const tiers = qd.tiers.map((t) => ({ min: Number(t.min_qty), pct: Number(t.percent) }))
+      .filter((t) => t.min > 1 && t.pct > 0).sort((a, b) => a.min - b.min);
+    const buy = $('.pdp-buy');
+    if (tiers.length && buy) {
+      const box = document.createElement('div');
+      box.className = 'pdp-bulk';
+      box.innerHTML = `
+        <div class="pdp-label">${esc(lang() === 'en'
+          ? (qd.label_en ?? 'Buy more, save more') : (qd.label_es ?? 'Compra más, ahorra más'))}</div>
+        <div class="bulk-tiers">${tiers.map((t, i) => {
+          const plus = i === tiers.length - 1 || tiers[i + 1].min > t.min + 1 ? '+' : '';
+          return `<span class="btier${t.pct >= 40 ? ' hot' : ''}">${t.min}${plus} ${T('uds', 'units')} <b>−${t.pct}%</b></span>`;
+        }).join('')}</div>
+        <p class="help">${T(
+          'Por producto, sumando todas sus concentraciones. No acumulable con cupones: se aplica el mayor.',
+          'Per product, counted across strengths. Not combinable with coupons: the larger discount applies.')}</p>`;
+      buy.parentNode.insertBefore(box, buy);
+    }
+  }
+
   renderGallery(p);
   renderSpec(p, batch);
   setSEO(p, cat);

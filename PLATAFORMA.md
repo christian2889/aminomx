@@ -228,6 +228,21 @@ No hay que redesplegar nada: al guardar, el botón aparece en `/login`.
   proveedor → activarlo en Supabase → botón equivalente en `login.html`
   (los estilos `.btn-social` ya están).
 
+## Descuentos por volumen (no acumulables con cupones)
+
+Escalones tipo Amino Club, activos en todo el catálogo:
+**2 uds −7.5% · 3+ −12.5% · 10+ −40% · 50+ −50%**.
+
+- Cuentan **por compuesto**: las unidades de un producto suman entre sus
+  concentraciones (5+15 mg del mismo péptido = 2 uds) y el escalón alcanzado
+  descuenta toda esa línea.
+- **No se acumulan con cupones**: `create_order` aplica el mayor de los dos,
+  y el uso del cupón solo se registra cuando el cupón gana.
+- El cobro real vive en `create_order`; la config en
+  `settings.qty_discounts` `{ enabled, tiers:[{min_qty, percent}…] }` es
+  editable sin redesplegar y alimenta la caja "Compra más, ahorra más" de la
+  ficha, el descuento del carrito y el resumen del checkout.
+
 ## Promoción del sitio (cupón automático)
 
 Un cupón "de banner" tipo Amino Club: hoy **RETA15 (−15% en todo)**.

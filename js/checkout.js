@@ -123,7 +123,7 @@ async function renderSpei(order) {
   // Cargar productos reales del carrito (precio de referencia para el resumen)
   const ids = cart.map((i) => i.id);
   const { data: products, error } = await supabase.from('products')
-    .select('id, slug, name, presentation_es, price_cents, stock, status')
+    .select('id, slug, name, category_id, presentation_es, price_cents, stock, status')
     .in('slug', ids);
   if (error) { toast(error.message, 'err'); return; }
 
@@ -139,20 +139,48 @@ async function renderSpei(order) {
   const { data: addresses } = await supabase.from('addresses')
     .select('*').order('is_default', { ascending: false });
 
-  // Promo del sitio (settings.promo): el cupón se precarga y el resumen
-  // muestra el descuento en vivo. El cobro real lo calcula create_order al
-  // validar el cupón contra la tabla coupons — aquí solo se pinta.
-  const { data: promoRow } = await supabase.from('settings')
-    .select('value').eq('key', 'promo').maybeSingle();
-  const pv = promoRow?.value;
+  // Ofertas del sitio: promo (cupón precargado) y escalones por volumen.
+  // El resumen pinta el descuento en vivo; el cobro real lo calcula
+  // create_order en el servidor. No se acumulan: se aplica el mayor.
+  const { data: offerRows } = await supabase.from('settings')
+    .select('key, value').in('key', ['promo', 'qty_discounts']);
+  const offers = Object.fromEntries((offerRows ?? []).map((r) => [r.key, r.value]));
+  const pv = offers.promo;
   const promo = (pv?.enabled === true && pv.code && Number(pv.percent) > 0)
     ? { code: String(pv.code), percent: Number(pv.percent) } : null;
+  const qv = offers.qty_discounts;
+  const qtyTiers = (qv?.enabled === true && Array.isArray(qv.tiers))
+    ? qv.tiers.map((t) => ({ min: Number(t.min_qty), pct: Number(t.percent) }))
+        .filter((t) => t.min > 0 && t.pct > 0).sort((a, b) => b.min - a.min)
+    : [];
+
+  // Descuento por volumen: las unidades del mismo compuesto suman entre
+  // concentraciones (name + categoría) y el escalón alcanzado descuenta esa
+  // línea completa. floor por familia, idéntico al SQL.
+  const qtyDisc = () => {
+    if (!qtyTiers.length) return 0;
+    const fams = {};
+    for (const i of items) {
+      const k = `${i.p.name}||${i.p.category_id}`;
+      const f = fams[k] ?? (fams[k] = { qty: 0, cents: 0 });
+      f.qty += i.qty; f.cents += i.p.price_cents * i.qty;
+    }
+    let d = 0;
+    for (const k of Object.keys(fams)) {
+      const f = fams[k];
+      const tier = qtyTiers.find((t) => f.qty >= t.min);
+      if (tier) d += Math.floor((f.cents * tier.pct) / 100);
+    }
+    return d;
+  };
 
   const subtotal = items.reduce((s, i) => s + i.p.price_cents * i.qty, 0);
   const free = cfg.FREE_SHIPPING_CENTS ?? 190000;
   const flat = cfg.SHIPPING_FLAT_CENTS ?? 18900;
   // Mismo redondeo que el servidor: (subtotal * pct) / 100 con división entera.
-  const disc0 = promo ? Math.floor((subtotal * promo.percent) / 100) : 0;
+  const vol0 = qtyDisc();
+  const cup0 = promo ? Math.floor((subtotal * promo.percent) / 100) : 0;
+  const disc0 = Math.max(vol0, cup0);
   const shipping = (subtotal - disc0) >= free ? 0 : flat;
   const def = addresses?.[0];
 
@@ -226,8 +254,11 @@ async function renderSpei(order) {
         </div>
         <div class="sum-row"><span>Subtotal</span><b>${mxn(subtotal)}</b></div>
         <div class="sum-row" id="sumDescRow" ${disc0 > 0 ? '' : 'hidden'}>
-          <span>Descuento <span class="mono">${promo ? esc(promo.code) : ''}</span></span>
+          <span>Descuento <span class="mono" id="sumDescLabel">${vol0 >= cup0 && vol0 > 0
+            ? 'por volumen' : (promo ? esc(promo.code) : '')}</span></span>
           <b id="sumDesc" style="color:hsl(var(--primary))">−${mxn(disc0)}</b></div>
+        <p class="help" id="sumDescNote" ${vol0 > 0 && cup0 > 0 ? '' : 'hidden'}
+          style="margin:-4px 0 8px">Cupón y descuento por volumen no se acumulan: se aplica el mayor.</p>
         <div class="sum-row"><span>Envío <span class="help" id="sumCarrier"></span></span>
           <b id="sumShip">${shipping === 0 ? 'Gratis' : mxn(shipping)}</b></div>
         <div class="sum-total"><span>Total estimado</span>
@@ -246,22 +277,32 @@ async function renderSpei(order) {
   const envio = { quoteId: null, rateId: null, cents: shipping, gratis: (subtotal - disc0) >= free };
   let quoteSeq = 0;
 
-  // Descuento visible según lo tecleado en el cupón. Solo se pinta en vivo el
-  // de la promo del sitio; cualquier otro código lo valida create_order.
+  // Descuento vigente: el mayor entre volumen y cupón (no acumulables).
+  // Solo se pinta en vivo el cupón de la promo; otros códigos los valida
+  // create_order al confirmar.
   const descuento = () => {
     const c = ($('#fCoupon')?.value ?? '').trim().toUpperCase();
-    return (promo && c === promo.code.toUpperCase())
+    const cup = (promo && c === promo.code.toUpperCase())
       ? Math.floor((subtotal * promo.percent) / 100) : 0;
+    const vol = qtyDisc();
+    return { total: Math.max(vol, cup), vol, cup };
   };
 
   function pintaResumen() {
-    const disc = descuento();
-    envio.gratis = (subtotal - disc) >= free;
+    const d = descuento();
+    envio.gratis = (subtotal - d.total) >= free;
     const efectivo = envio.gratis ? 0 : envio.cents;
     const row = $('#sumDescRow');
-    if (row) { row.hidden = disc === 0; $('#sumDesc').textContent = `−${mxn(disc)}`; }
+    if (row) {
+      row.hidden = d.total === 0;
+      $('#sumDesc').textContent = `−${mxn(d.total)}`;
+      const lbl = $('#sumDescLabel');
+      if (lbl) lbl.textContent = d.vol >= d.cup && d.vol > 0 ? 'por volumen' : (promo ? promo.code : '');
+      const note = $('#sumDescNote');
+      if (note) note.hidden = !(d.vol > 0 && d.cup > 0);
+    }
     $('#sumShip').textContent = efectivo === 0 ? 'Gratis' : mxn(efectivo);
-    $('#sumTotal').textContent = mxn(subtotal - disc + efectivo);
+    $('#sumTotal').textContent = mxn(subtotal - d.total + efectivo);
   }
   $('#fCoupon')?.addEventListener('input', pintaResumen);
 
@@ -301,10 +342,10 @@ async function renderSpei(order) {
       envio.quoteId = data.quote_id ?? null;
       envio.rateId = String(rates[0].id);
       envio.cents = rates[0].cost_cents;
-      envio.gratis = (subtotal - descuento()) >= free;
+      envio.gratis = (subtotal - descuento().total) >= free;
 
       const faltaLocal = localRate && !envio.gratis && localRate.free_from_cents
-        ? localRate.free_from_cents - (subtotal - descuento()) : 0;
+        ? localRate.free_from_cents - (subtotal - descuento().total) : 0;
       box.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">
         ${rates.map((r, i) => tarifaHTML(r, i === 0)).join('')}
         ${localRate ? `<p class="help">🛵 En Ensenada entregamos a domicilio el mismo día

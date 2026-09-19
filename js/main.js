@@ -186,13 +186,34 @@
       .catch(function () { /* sin conexión: se mantiene el catálogo embebido */ });
   }
 
-  /* ------------------- Promoción activa (settings.promo) -------------------
-     El cupón real vive en la tabla coupons y lo valida create_order en el
-     servidor; esta llave solo enciende el banner y el descuento "se aplica
-     solo" del carrito. Apagarla (enabled:false) quita todo sin redesplegar. */
+  /* --------------- Ofertas activas (promo y descuentos por volumen) -------
+     El cupón real y los escalones los cobra create_order en el servidor;
+     estas llaves de settings solo encienden el banner y el descuento
+     visible del carrito. Apagarlas (enabled:false) quita todo sin deploy. */
   var PROMO = null;
+  var QTYD = [];   // escalones por volumen, ordenados de mayor a menor min
   function promoDisc(sub) {
     return PROMO ? Math.floor((sub * PROMO.percent) / 100) : 0;
+  }
+  // Unidades del mismo compuesto suman entre concentraciones (igual que el
+  // servidor); el escalón alcanzado descuenta toda esa línea familiar.
+  function volDisc() {
+    if (!QTYD.length) return 0;
+    var fams = {};
+    state.cart.forEach(function (i) {
+      var p = byId[i.id]; if (!p) return;
+      var k = p.name + "||" + p.category;
+      var f = fams[k] || (fams[k] = { qty: 0, amt: 0 });
+      f.qty += i.qty; f.amt += p.price * i.qty;
+    });
+    var d = 0;
+    Object.keys(fams).forEach(function (k) {
+      var f = fams[k];
+      for (var j = 0; j < QTYD.length; j++) {
+        if (f.qty >= QTYD[j].min) { d += Math.floor((f.amt * QTYD[j].pct) / 100); break; }
+      }
+    });
+    return d;
   }
   function paintPromo() {
     if (!PROMO) return;
@@ -209,7 +230,6 @@
         '<span class="announce-more"> ' +
         T("— se aplica solo en tu carrito", "— applied automatically in your cart") + "</span>";
     }
-    $$("[data-promo-code]").forEach(function (n) { n.textContent = PROMO.code; });
     syncAnnounce();
   }
   // Altura real de la barra (una o dos líneas) → --announce-h, de la que
@@ -219,24 +239,32 @@
     if (bar) document.documentElement.style.setProperty("--announce-h", bar.offsetHeight + "px");
   }
   window.addEventListener("resize", syncAnnounce);
-  function loadPromo() {
+  function loadOffers() {
     if (!CFG.SUPABASE_URL || !window.fetch) return;
-    fetch(CFG.SUPABASE_URL + "/rest/v1/settings?key=eq.promo&select=value", {
+    fetch(CFG.SUPABASE_URL + "/rest/v1/settings?key=in.(promo,qty_discounts)&select=key,value", {
       headers: { apikey: CFG.SUPABASE_KEY, Authorization: "Bearer " + CFG.SUPABASE_KEY }
     })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (rows) {
-        var v = rows && rows[0] && rows[0].value;
-        if (!v || v.enabled !== true || !v.code || !(Number(v.percent) > 0)) return;
-        PROMO = {
-          code: String(v.code),
-          percent: Number(v.percent),
-          labelEs: v.label_es || (v.percent + "% de descuento en todo el sitio"),
-          labelEn: v.label_en || (v.percent + "% off sitewide")
-        };
+        (rows || []).forEach(function (row) {
+          var v = row.value || {};
+          if (row.key === "promo" && v.enabled === true && v.code && Number(v.percent) > 0) {
+            PROMO = {
+              code: String(v.code),
+              percent: Number(v.percent),
+              labelEs: v.label_es || (v.percent + "% de descuento en todo el sitio"),
+              labelEn: v.label_en || (v.percent + "% off sitewide")
+            };
+          }
+          if (row.key === "qty_discounts" && v.enabled === true && v.tiers && v.tiers.length) {
+            QTYD = v.tiers.map(function (t) { return { min: Number(t.min_qty), pct: Number(t.percent) }; })
+              .filter(function (t) { return t.min > 0 && t.pct > 0; })
+              .sort(function (a, b) { return b.min - a.min; });
+          }
+        });
         paintPromo(); renderCart();
       })
-      .catch(function () { /* sin promo: el sitio opera normal */ });
+      .catch(function () { /* sin ofertas: el sitio opera normal */ });
   }
 
   /* -------------------- Estado -------------------- */
@@ -470,9 +498,13 @@
     $$("[data-cart-count]").forEach(function (el) { el.textContent = count; el.setAttribute("data-empty", count === 0 ? "true" : "false"); });
 
     var sub = cartSubtotal();
-    // La promo se descuenta antes de evaluar el envío gratis: el servidor
-    // compara (subtotal - descuento) contra el umbral, aquí igual.
-    var disc = promoDisc(sub);
+    // Volumen y cupón de promo no se acumulan: se muestra (y el servidor
+    // cobra) el mayor. El descuento se resta antes de evaluar envío gratis.
+    var volD = volDisc();
+    var proD = promoDisc(sub);
+    var disc = Math.max(volD, proD);
+    var discLabel = volD >= proD && volD > 0
+      ? T("por volumen", "volume") : (PROMO ? PROMO.code : "");
     var eff = sub - disc;
     var shipping = (sub === 0 || eff >= FREE_SHIPPING) ? 0 : SHIPPING_COST;
     var n = state.cart.length;
@@ -516,6 +548,7 @@
     }
     var subOut = $("[data-cart-subtotal]"); if (subOut) subOut.textContent = fmt(sub);
     $$("[data-promo-line]").forEach(function (el) { el.hidden = !(disc > 0 && n > 0); });
+    $$("[data-promo-code]").forEach(function (el) { el.textContent = discLabel; });
     var dOut = $("[data-cart-discount]"); if (dOut) dOut.textContent = "−" + fmt(disc);
     var shipOut = $("[data-cart-shipping]"); if (shipOut) shipOut.textContent = shipping === 0 ? T("Gratis", "Free") : fmt(shipping);
     var totOut = $("[data-cart-total]"); if (totOut) totOut.textContent = fmt(eff + shipping);
@@ -682,5 +715,5 @@
 
   /* -------------------- Init -------------------- */
   applyLang(); renderCats(); renderFilters(); renderGrid(); renderCart();
-  syncAnnounce(); loadCatalog(); loadPromo();
+  syncAnnounce(); loadCatalog(); loadOffers();
 })();
