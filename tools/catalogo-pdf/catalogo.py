@@ -57,8 +57,8 @@ CATALOGO = [
         ("GHK-Cu", "Vial liofilizado 50 mg", 59000),
     ]),
     ("Insumos", [
-        ("Agua bacteriostática", "Vial estéril 3 mL", 3500),
-        ("Agua bacteriostática", "Vial estéril 10 mL", 7000),
+        ("Agua bacteriostática", "Vial estéril 3 mL", 6900),
+        ("Agua bacteriostática", "Vial estéril 10 mL", 14900),
     ]),
 ]
 
