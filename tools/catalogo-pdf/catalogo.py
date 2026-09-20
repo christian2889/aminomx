@@ -177,7 +177,8 @@ def condiciones():
                   "(Estafeta, DHL, UPS y Paquetexpress). Zonas metropolitanas 24 h, "
                   "resto del país 48-72 h. Empaque discreto, sin logotipos y con guía "
                   "rastreable.<br/>En Ensenada, B.C.: entrega en mano el mismo día "
-                  "por $100 MXN, gratis desde $1,900.", st_cond),
+                  "por $100 MXN, gratis desde $1,900.<br/>"
+                  "<b>Mayoreo:</b> flete de $250 MXN por caja (guía generada).", st_cond),
     ]
     der = [
         Paragraph("Pagos", st_cond_t),
