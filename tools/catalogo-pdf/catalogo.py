@@ -62,7 +62,7 @@ CATALOGO = [
     ]),
 ]
 
-TIERS = [(2, 7.5), (3, 12.5), (10, 30), (50, 40)]
+TIERS = [(2, 7.5), (3, 12.5), (10, 40), (50, 50)]
 
 # Porcentajes de las dos columnas de la tabla, tomados de TIERS: así un
 # cambio de escalón no deja las columnas anunciando otro descuento.
