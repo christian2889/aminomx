@@ -62,7 +62,11 @@ CATALOGO = [
     ]),
 ]
 
-TIERS = [(2, 7.5), (3, 12.5), (10, 40), (50, 50)]
+TIERS = [(2, 7.5), (3, 12.5), (10, 30), (50, 40)]
+
+# Porcentajes de las dos columnas de la tabla, tomados de TIERS: así un
+# cambio de escalón no deja las columnas anunciando otro descuento.
+PCT_COL = {q: p for q, p in TIERS}
 
 ss = getSampleStyleSheet()
 
@@ -141,8 +145,8 @@ def tabla_categoria(filas):
             Paragraph(nombre, st_cell),
             Paragraph(pres, st_sub),
             Paragraph(mxn(cents), st_num),
-            Paragraph(mxn(con_desc(cents, 12.5)), st_num_d),
-            Paragraph(mxn(con_desc(cents, 40)), st_num_d),
+            Paragraph(mxn(con_desc(cents, PCT_COL[3])), st_num_d),
+            Paragraph(mxn(con_desc(cents, PCT_COL[10])), st_num_d),
         ])
     t = Table(data, colWidths=[6.5 * cm, 4.5 * cm, 2.2 * cm, 1.9 * cm, 2.1 * cm],
               repeatRows=1)
