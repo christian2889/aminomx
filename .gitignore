@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+tools/product-renders/out/
+tools/product-renders/fonts/
