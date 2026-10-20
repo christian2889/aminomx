@@ -231,7 +231,7 @@ No hay que redesplegar nada: al guardar, el botón aparece en `/login`.
 ## Descuentos por volumen (no acumulables con cupones)
 
 Escalones tipo Amino Club, activos en todo el catálogo:
-**2 uds −7.5% · 3+ −12.5% · 10+ −40% · 50+ −50%**.
+**2 uds −7.5% · 3+ −12.5% · 10+ −35%**.
 
 - Cuentan **por compuesto**: las unidades de un producto suman entre sus
   concentraciones (5+15 mg del mismo péptido = 2 uds) y el escalón alcanzado

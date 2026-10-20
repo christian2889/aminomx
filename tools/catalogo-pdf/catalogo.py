@@ -63,7 +63,7 @@ CATALOGO = [
     ]),
 ]
 
-TIERS = [(2, 7.5), (3, 12.5), (10, 40), (50, 50)]
+TIERS = [(2, 7.5), (3, 12.5), (10, 35)]
 
 # Porcentajes de las dos columnas de la tabla, tomados de TIERS: así un
 # cambio de escalón no deja las columnas anunciando otro descuento.
@@ -109,7 +109,7 @@ def con_desc(cents, pct):
 
 
 def banda_descuentos():
-    """Los cuatro escalones, tipo ficha de producto."""
+    """Los escalones de TIERS, repartidos a lo ancho como en la ficha."""
     celdas = []
     for i, (q, pct) in enumerate(TIERS):
         mas = "+" if i == len(TIERS) - 1 or TIERS[i + 1][0] > q + 1 else ""
@@ -120,7 +120,9 @@ def banda_descuentos():
                       P("t2", alignment=TA_CENTER)),
         ])
     fila = [[c[0] for c in celdas], [c[1] for c in celdas]]
-    t = Table(fila, colWidths=[4.05 * cm] * 4, rowHeights=[0.72 * cm, 0.42 * cm])
+    ancho = 16.2 * cm / len(TIERS)
+    t = Table(fila, colWidths=[ancho] * len(TIERS),
+              rowHeights=[0.72 * cm, 0.42 * cm])
     t.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), TEAL_SOFT),
         ("BOX", (0, 0), (-1, -1), 0.6, TEAL),
