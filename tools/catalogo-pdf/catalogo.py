@@ -23,42 +23,43 @@ MARCA = "BIO AMINOS"
 SITIO = "aminosmx.com"
 WHATS = "+52 646 116 4390"
 MAIL = "ventas@aminosmx.com"
-VIGENCIA = "Septiembre 2026"
+VIGENCIA = "Octubre 2026"
 
 # (categoría, [(producto, presentación, precio_centavos)])
+# Precios espejo de la tabla products en Supabase; ver README para refrescar.
 CATALOGO = [
     ("Pérdida de peso", [
-        ("Retatrutide", "Vial liofilizado 5 mg", 75000),
-        ("Retatrutide", "Vial liofilizado 15 mg", 190000),
-        ("Retatrutide", "Vial liofilizado 20 mg", 221000),
-        ("Tirzepatide", "Vial liofilizado 5 mg", 65000),
-        ("Tirzepatide", "Vial liofilizado 15 mg", 109000),
-        ("HGH Fragment 176-191", "Vial liofilizado 5 mg", 95000),
+        ("Retatrutide", "Vial liofilizado 5 mg", 85000),
+        ("Retatrutide", "Vial liofilizado 15 mg", 169000),
+        ("Retatrutide", "Vial liofilizado 20 mg", 199000),
+        ("Tirzepatide", "Vial liofilizado 5 mg", 59000),
+        ("Tirzepatide", "Vial liofilizado 15 mg", 99000),
+        ("HGH Fragment 176-191", "Vial liofilizado 5 mg", 99000),
     ]),
     ("Recomposición corporal", [
-        ("Tesamorelin", "Vial liofilizado 10 mg", 229000),
-        ("Ipamorelin", "Vial liofilizado 5 mg", 75000),
-        ("Blend CJC-1295 sin DAC + Ipamorelin", "Vial liofilizado 5 mg + 5 mg", 190000),
+        ("Tesamorelin", "Vial liofilizado 10 mg", 199000),
+        ("Ipamorelin", "Vial liofilizado 5 mg", 69000),
+        ("Blend CJC-1295 sin DAC + Ipamorelin", "Vial liofilizado 5 mg + 5 mg", 169000),
         ("PEG-MGF", "Vial liofilizado 2 mg", 115000),
-        ("HGH Somatropina 191aa", "Vial liofilizado 24 UI", 145000),
+        ("HGH Somatropina 191aa", "Vial liofilizado 24 UI", 119000),
     ]),
     ("Metabólicos", [
-        ("MOTS-c", "Vial liofilizado 15 mg", 159000),
-        ("SS-31 (Elamipretide)", "Vial liofilizado 10 mg", 190000),
+        ("MOTS-c", "Vial liofilizado 15 mg", 129000),
+        ("SS-31 (Elamipretide)", "Vial liofilizado 10 mg", 125000),
     ]),
     ("Regenerativos", [
-        ("Blend Glow70 (BPC-157 + GHK-Cu + TB-500)", "Vial liofilizado 70 mg (10+50+10)", 259000),
-        ("KPV", "Vial liofilizado 5 mg", 69000),
+        ("Blend Glow70 (BPC-157 + GHK-Cu + TB-500)", "Vial liofilizado 70 mg (10+50+10)", 229000),
+        ("KPV", "Vial liofilizado 5 mg", 75000),
         ("Cartalax", "Vial liofilizado 10 mg", 149000),
     ]),
     ("Anti-edad", [
-        ("Glutatión", "Vial liofilizado 600 mg", 59000),
-        ("NAD+", "Vial liofilizado 500 mg", 79000),
+        ("Glutatión", "Vial liofilizado 600 mg", 65000),
+        ("NAD+", "Vial liofilizado 500 mg", 112000),
         ("GHK-Cu", "Vial liofilizado 50 mg", 59000),
     ]),
     ("Insumos", [
-        ("Agua bacteriostática", "Vial estéril 3 mL", 6900),
-        ("Agua bacteriostática", "Vial estéril 10 mL", 14900),
+        ("Agua bacteriostática", "Vial estéril 3 mL", 7000),
+        ("Agua bacteriostática", "Vial estéril 10 mL", 11000),
     ]),
 ]
 
