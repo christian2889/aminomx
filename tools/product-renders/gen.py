@@ -24,6 +24,8 @@ PRODUCTS = [
     ("glow70-blend",   ["GLOW-70"],                "70 MG",  "#EC4899", "powder", "BPC-157 · GHK-CU · TB-500"),
     ("kpv-5",          ["KPV"],                    "5 MG",   "#84CC16", "powder", ""),
     ("cartalax-10",    ["CARTALAX"],               "10 MG",  "#EA580C", "powder", "ALA-GLU-ASP"),
+    ("tb500-5",        ["TB-500"],                 "5 MG",   "#0F766E", "powder", "TIMOSINA BETA-4"),
+    ("bpc157-5",       ["BPC-157"],                "5 MG",   "#15803D", "powder", "PENTADECAPÉPTIDO"),
     ("glutation-600",  ["GLUTATIÓN"],              "600 MG", "#38BDF8", "powder", ""),
     ("nad-500",        ["NAD+"],                   "500 MG", "#06B6D4", "powder", ""),
     ("ghkcu-50",       ["GHK-CU"],                 "50 MG",  "#C2703D", "powder", ""),
@@ -64,12 +66,12 @@ def html_for(slug, lines, dose, color, tipo, sub):
     fsize = min(56, int(268 / (0.62 * longest)))
     y0 = 428 + 74
     name_ts = "".join(
-        f'<text x="478" y="{y0 + i * (fsize + 8)}" font-family="Inter" font-weight="800" '
+        f'<text x="478" y="{y0 + i * (fsize + 8)}" font-family="Inter, sans-serif" font-weight="800" '
         f'font-size="{fsize}" letter-spacing=".5" fill="{fg}">{l}</text>'
         for i, l in enumerate(lines))
     name_bottom = y0 + (len(lines) - 1) * (fsize + 8)
     sub_size = max(13, min(21, int((268 / max(1, len(sub)) - 2.2) / 0.54))) if sub else 0
-    sub_t = (f'<text x="478" y="{name_bottom + 38}" font-family="Inter" font-weight="600" font-size="{sub_size}" '
+    sub_t = (f'<text x="478" y="{name_bottom + 38}" font-family="Inter, sans-serif" font-weight="600" font-size="{sub_size}" '
              f'letter-spacing="2.2" fill="{fg_soft}">{sub}</text>') if sub else ""
     badge_y = name_bottom + (62 if sub else 34)
 
@@ -87,10 +89,6 @@ def html_for(slug, lines, dose, color, tipo, sub):
       <ellipse cx="560" cy="810" rx="110" ry="6" fill="#ffffff" opacity=".6"/>'''
 
     return f'''<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-@font-face {{ font-family: Inter; src: url("file://{BASE}/fonts/inter_400.ttf"); font-weight: 400; }}
-@font-face {{ font-family: Inter; src: url("file://{BASE}/fonts/inter_600.ttf"); font-weight: 600; }}
-@font-face {{ font-family: Inter; src: url("file://{BASE}/fonts/inter_700.ttf"); font-weight: 700; }}
-@font-face {{ font-family: Inter; src: url("file://{BASE}/fonts/inter_800.ttf"); font-weight: 800; }}
 * {{ margin: 0; padding: 0; }}
 html, body {{ width: 1200px; height: 1200px; overflow: hidden; }}
 </style></head><body>
@@ -187,19 +185,19 @@ html, body {{ width: 1200px; height: 1200px; overflow: hidden; }}
       <!-- badge de dosis -->
       <rect x="478" y="{badge_y}" rx="26" width="{60 + len(dose) * 17}" height="52" fill="{badge_bg}"
             stroke="{badge_bd}" stroke-width="2.5"/>
-      <text x="{478 + (60 + len(dose) * 17) / 2}" y="{badge_y + 35}" text-anchor="middle" font-family="Inter"
+      <text x="{478 + (60 + len(dose) * 17) / 2}" y="{badge_y + 35}" text-anchor="middle" font-family="Inter, sans-serif"
             font-weight="700" font-size="27" letter-spacing="2" fill="{fg}">{dose}</text>
 
       <!-- sello inferior -->
       <rect x="478" y="712" rx="19" width="196" height="38" fill="none" stroke="{badge_bd}" stroke-width="2"/>
-      <text x="576" y="738" text-anchor="middle" font-family="Inter" font-weight="600" font-size="20"
+      <text x="576" y="738" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="20"
             letter-spacing="1.5" fill="{fg}">PUREZA ≥ 99%</text>
-      <text x="478" y="775" font-family="Inter" font-weight="600" font-size="15" letter-spacing="3.5"
+      <text x="478" y="775" font-family="Inter, sans-serif" font-weight="600" font-size="15" letter-spacing="3.5"
             fill="{fg_soft}">RESEARCH USE ONLY</text>
 
       <!-- marca vertical -->
       <g transform="translate(748,776) rotate(-90)">
-        <text x="0" y="0" font-family="Inter" font-weight="800" font-size="52" letter-spacing=".5" fill="{fg}">aminos<tspan opacity=".62">mx</tspan></text>
+        <text x="0" y="0" font-family="Inter, sans-serif" font-weight="800" font-size="52" letter-spacing=".5" fill="{fg}">aminos<tspan opacity=".62">mx</tspan></text>
       </g>
     </g>
 

@@ -51,6 +51,8 @@ CATALOGO = [
         ("Blend Glow70 (BPC-157 + GHK-Cu + TB-500)", "Vial liofilizado 70 mg (10+50+10)", 229000),
         ("KPV", "Vial liofilizado 5 mg", 75000),
         ("Cartalax", "Vial liofilizado 10 mg", 149000),
+        ("TB-500", "Vial liofilizado 5 mg", 109900),
+        ("BPC-157", "Vial liofilizado 5 mg", 69000),
     ]),
     ("Anti-edad", [
         ("Glutatión", "Vial liofilizado 600 mg", 65000),
